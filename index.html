@@ -717,6 +717,39 @@ We appreciate your prompt attention to this matter.`;
             }
         };
 
+        // IDF/T2 Work Authorization template
+            workAuth                                                                                                                                                                  : {
+                title: "Work Authorization Request",
+                fields: [
+                    { name: "taskLink", label: "Task Link", type: "text" },
+                    { name: "taskID", label: "Task ID", type: "text" },
+                    { name: "startDevice", label: "Starting Device", type: "text" },
+                    { name: "startPort", label: "Start Port", type: "text" },
+                    { name: "expectedHop", label: "Expected Hop (leave empty if unknown)", type: "text" },
+                    { name: "endDevice", label: "End Device", type: "text" },
+                    { name: "endPort", label: "End Port", type: "text" },
+                    { name: "actions", label: "Actions being taken", type: "text" },
+                    { name: "assetTagConfirmed", label: "Was the asset tag visually confirmed?", type: "select", options: ["Yes", "No"] },
+                    { name: "labelConfirmed", label: "Was the cable label visually confirmed?", type: "select", options: ["Yes", "No"] },
+                    { name: "secondTech", label: "Alias of Second Tech QC", type: "text" },
+                    { type: "info", text: `If a task is quarantined, please direct the requestor to <a href="https://microsoft.sharepoint.com/sites/COIPartnerResourceCenter/SitePages/CO+-Partner-Resource-Center.aspx?ct=1748876712863&or=Teams-HL&ga=1&LOF=1&xsdata=MDV8MDJ8fDdlZjg4MTg4OGJiMjQ0MzBhMTFjMDhkZTFhMTY3ODAwfDcyZjk4OGJmODZmMTQxYWY5MWFiMmQ3Y2QwMTFkYjQ3fDB8MHw2Mzg5NzY4ODA5MzgxMTkxMDB8VW5rbm93bnxWR1ZoYlhOVFpXTjFjbWwwZVZObGNuWnBZMlY4ZXlKRFFTSTZJbFJsWVcxelgwRlVVRk5sY25acFkyVmZVMUJQVEU5R0lpd2lWaUk2SWpBdU1DNHdNREF3SWl3aVVDSTZJbGRwYmpNeUlpd2lRVTRpT2lKUGRHaGxjaUlzSWxkVUlqb3hNWDA9fDF8TDJOb1lYUnpMekU1T21KaVpHTm1OalUzTWpZNFpqUXhNVGs1Tm1Nek5UZGxObU16TnpFeFptTTNRSFJvY21WaFpDNTJNaTl0WlhOellXZGxjeTh4TnpZeU1Ea3hNamt5T0Rnd3w4YTcwMGYyOTdiZDE0NzE0YzkwNDA4ZGUxYTE2NzdmZnxlNzQ5NGE4MjI3NjI0N2Q5OGYwMTNlNDI2ZWFiMmI5ZA%3D%3D&sdata=ZGtMSy9JZVhOYlRFRnFHV1M0MlFWc1pQbEp1OXArZWdoSnpBVGY0bDlUbz0%3D&ovuser=72f988bf-86f1-41af-91ab-2d7cd011db47%2Caguajardo%40microsoft.com&OR=Teams-HL&CT=1762904435825&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNTExMDYxMzYwMSIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D" target="_blank">the CO&I Partner Resource Center</a> for further instructions on how to proceed with scheduling work windows for quarantined tasks.`}
+                ],
+                format: (data) => {
+                    return ` - Approval Request - 
+${data.taskId || "TaskIdHolder"}
+Task Link: ${data.taskLink || "taskLink"}
+Task ID: ${data.taskID || "taskID"}
+Start Device: ${data.startDevice || "startDevice:port"}:${data.startPort}
+Expected Hop: ${data.expectedHop || "expectedHop"}
+End Device: ${data.endDevice || "endDevice:port"}:${data.endPort}
+Required Actions: ${data.actions || "actions"}
+Asset Tag Confirmed: ${data.actions || "Confirmed?"}
+Cable Label Verified: ${data.actions || "Label?"}
+2nd Tech QC Alias: ${data.secondTech || "secondTech"}`;
+                }
+            }
+        };
+
         // Current template and parts counter
         let currentTemplate = 'breakfix';
         let additionalPartsCounter = 0;
