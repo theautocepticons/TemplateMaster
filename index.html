@@ -719,7 +719,7 @@ We appreciate your prompt attention to this matter.`;
         };
 
         // IDF/T2 Work Authorization template
-            workAuth                                                                                                                                                                  : {
+            workAuth: {
                 title: "Work Authorization Request",
                 fields: [
                     { name: "taskLink", label: "Task Link", type: "text" },
@@ -737,15 +737,14 @@ We appreciate your prompt attention to this matter.`;
                 ],
                 format: (data) => {
                     return ` - Approval Request - 
-${data.taskId || "TaskIdHolder"}
 Task Link: ${data.taskLink || "taskLink"}
 Task ID: ${data.taskID || "taskID"}
 Start Device: ${data.startDevice || "startDevice:port"}:${data.startPort}
 Expected Hop: ${data.expectedHop || "expectedHop"}
 End Device: ${data.endDevice || "endDevice:port"}:${data.endPort}
 Required Actions: ${data.actions || "actions"}
-Asset Tag Confirmed: ${data.actions || "Confirmed?"}
-Cable Label Verified: ${data.actions || "Label?"}
+Asset Tag Confirmed: ${data.assetTagConfirmed || "Confirmed?"}
+Cable Label Verified: ${data.alabelConfirmed || "Label?"}
 2nd Tech QC Alias: ${data.secondTech || "secondTech"}`;
                 }
             }
