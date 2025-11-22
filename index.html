@@ -256,36 +256,6 @@
             border-radius: 0 4px 4px 0;
         }
         
-        /* Special styling for dark mode conditional fields */
-        body.theme-dark .conditional-fields-container,
-        body.theme-dark-purple .conditional-fields-container,
-        body.theme-dark-green .conditional-fields-container {
-            background-color: #a8c9e6;
-            border-color: #3498db;
-        }
-        
-        body.theme-dark .conditional-fields-container label,
-        body.theme-dark .conditional-fields-container input,
-        body.theme-dark .conditional-fields-container textarea,
-        body.theme-dark-purple .conditional-fields-container label,
-        body.theme-dark-purple .conditional-fields-container input,
-        body.theme-dark-purple .conditional-fields-container textarea,
-        body.theme-dark-green .conditional-fields-container label,
-        body.theme-dark-green .conditional-fields-container input,
-        body.theme-dark-green .conditional-fields-container textarea {
-            color: #333;
-        }
-        
-        body.theme-dark .conditional-fields-container input,
-        body.theme-dark .conditional-fields-container textarea,
-        body.theme-dark-purple .conditional-fields-container input,
-        body.theme-dark-purple .conditional-fields-container textarea,
-        body.theme-dark-green .conditional-fields-container input,
-        body.theme-dark-green .conditional-fields-container textarea {
-            background-color: #ffffff;
-            border-color: #ccc;
-        }
-        
         /* Additional parts */
         .additional-parts-wrapper {
             margin-top: 15px;
@@ -339,14 +309,14 @@
             border: 1px solid var(--border-color);
             min-height: 300px;
             white-space: pre-wrap;
-            word-wrap: break-word;  /* ← Add this line */
-            overflow-wrap: break-word;  /* ← Add this line */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
             word-break: break-all;
-            font-family: 'Segoe UI', Tahome, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-size: 14px;
             margin-top: 15px;
             overflow-y: auto;
-            overflow-x: hidden;  /* ← Add this line to prevent horizontal scroll */
+            overflow-x: hidden;
             line-height: 1.5;
             color: var(--text-color);
             max-width: 100%;
@@ -646,9 +616,9 @@ TICKET ESCALATED: ${data.wasEscalated === "checked" ? "Yes" : "No"}${escalationI
                     if (data.wasEscalated === "checked") {
                         escalationInfo = `
 
-            ESCALATION DETAILS:
-            - Escalated To: ${data.escalatedTo || "[Not specified]"}
-            - Senior Tech Approval: ${data.seniorTechAlias || "[Not specified]"}`;
+ESCALATION DETAILS:
+- Escalated To: ${data.escalatedTo || "[Not specified]"}
+- Senior Tech Approval: ${data.seniorTechAlias || "[Not specified]"}`;
                     }
                     
                     // Format motherboard replacement information
@@ -680,16 +650,14 @@ SLOT #: ${data.slotNumber || "N/A"}`;
 ASSET TAG CONFIRMED: ${data.assetTagConfirmed || "N/A"}
 
 UPON ARRIVAL:
-${data.uponArrival || "[No arrival notes recorded]"}
-${partReplacementInfo}
-${dbdInfo}
+${data.uponArrival || "[No arrival notes recorded]"}${partReplacementInfo}${dbdInfo}
 
 ACTIONS TAKEN:
 ${data.actionsTaken || "[No actions recorded]"}
 
 TICKET ESCALATED: ${data.wasEscalated === "checked" ? "Yes" : "No"}${escalationInfo}`;
-    }
-},
+                }
+            },
             
             // Work Window Request Email template
             workwindow: {
@@ -715,10 +683,9 @@ Important considerations:
 
 We appreciate your prompt attention to this matter.`;
                 }
-            }
-        };
+            },
 
-        // IDF/T2 Work Authorization template
+            // IDF/T2 Work Authorization template
             workAuth: {
                 title: "Work Authorization Request",
                 fields: [
@@ -733,19 +700,20 @@ We appreciate your prompt attention to this matter.`;
                     { name: "assetTagConfirmed", label: "Was the asset tag visually confirmed?", type: "select", options: ["Yes", "No"] },
                     { name: "labelConfirmed", label: "Was the cable label visually confirmed?", type: "select", options: ["Yes", "No"] },
                     { name: "secondTech", label: "Alias of Second Tech QC", type: "text" },
-                    { type: "info", text: `If a task is quarantined, please direct the requestor to <a href="https://microsoft.sharepoint.com/sites/COIPartnerResourceCenter/SitePages/CO+-Partner-Resource-Center.aspx?ct=1748876712863&or=Teams-HL&ga=1&LOF=1&xsdata=MDV8MDJ8fDdlZjg4MTg4OGJiMjQ0MzBhMTFjMDhkZTFhMTY3ODAwfDcyZjk4OGJmODZmMTQxYWY5MWFiMmQ3Y2QwMTFkYjQ3fDB8MHw2Mzg5NzY4ODA5MzgxMTkxMDB8VW5rbm93bnxWR1ZoYlhOVFpXTjFjbWwwZVZObGNuWnBZMlY4ZXlKRFFTSTZJbFJsWVcxelgwRlVVRk5sY25acFkyVmZVMUJQVEU5R0lpd2lWaUk2SWpBdU1DNHdNREF3SWl3aVVDSTZJbGRwYmpNeUlpd2lRVTRpT2lKUGRHaGxjaUlzSWxkVUlqb3hNWDA9fDF8TDJOb1lYUnpMekU1T21KaVpHTm1OalUzTWpZNFpqUXhNVGs1Tm1Nek5UZGxObU16TnpFeFptTTNRSFJvY21WaFpDNTJNaTl0WlhOellXZGxjeTh4TnpZeU1Ea3hNamt5T0Rnd3w4YTcwMGYyOTdiZDE0NzE0YzkwNDA4ZGUxYTE2NzdmZnxlNzQ5NGE4MjI3NjI0N2Q5OGYwMTNlNDI2ZWFiMmI5ZA%3D%3D&sdata=ZGtMSy9JZVhOYlRFRnFHV1M0MlFWc1pQbEp1OXArZWdoSnpBVGY0bDlUbz0%3D&ovuser=72f988bf-86f1-41af-91ab-2d7cd011db47%2Caguajardo%40microsoft.com&OR=Teams-HL&CT=1762904435825&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNTExMDYxMzYwMSIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D" target="_blank">the CO&I Partner Resource Center</a> for further instructions on how to proceed with scheduling work windows for quarantined tasks.`}
+                    //{ type: "info", text: `If a task is quarantined, please direct the requestor to <a href="https://microsoft.sharepoint.com/sites/COIPartnerResourceCenter/SitePages/CO+-Partner-Resource-Center.aspx?ct=1748876712863&or=Teams-HL&ga=1&LOF=1&xsdata=MDV8MDJ8fDdlZjg4MTg4OGJiMjQ0MzBhMTFjMDhkZTFhMTY3ODAwfDcyZjk4OGJmODZmMTQxYWY5MWFiMmQ3Y2QwMTFkYjQ3fDB8MHw2Mzg5NzY4ODA5MzgxMTkxMDB8VW5rbm93bnxWR1ZoYlhOVFpXTjFjbWwwZVZObGNuWnBZMlY4ZXlKRFFTSTZJbFJsWVcxelgwRlVVRk5sY25acFkyVmZVMUJQVEU5R0lpd2lWaUk2SWpBdU1DNHdNREF3SWl3aVVDSTZJbGRwYmpNeUlpd2lRVTRpT2lKUGRHaGxjaUlzSWxkVUlqb3hNWDA9fDF8TDJOb1lYUnpMekU1T21KaVpHTm1OalUzTWpZNFpqUXhNVGs1Tm1Nek5UZGxObU16TnpFeFptTTNRSFJvY21WaFpDNTJNaTl0WlhOellXZGxjeTh4TnpZeU1Ea3hNamt5T0Rnd3w4YTcwMGYyOTdiZDE0NzE0YzkwNDA4ZGUxYTE2NzdmZnxlNzQ5NGE4MjI3NjI0N2Q5OGYwMTNlNDI2ZWFiMmI5ZA%3D%3D&sdata=ZGtMSy9JZVhOYlRFRnFHV1M0MlFWc1pQbEp1OXArZWdoSnpBVGY0bDlUbz0%3D&ovuser=72f988bf-86f1-41af-91ab-2d7cd011db47%2Caguajardo%40microsoft.com&OR=Teams-HL&CT=1762904435825&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNTExMDYxMzYwMSIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D" target="_blank">the CO&I Partner Resource Center</a> for further instructions on how to proceed with scheduling work windows for quarantined tasks.`}
                 ],
                 format: (data) => {
-                    return ` - Approval Request - 
-Task Link: ${data.taskLink || "taskLink"}
-Task ID: ${data.taskID || "taskID"}
-Start Device: ${data.startDevice || "startDevice:port"}:${data.startPort}
-Expected Hop: ${data.expectedHop || "expectedHop"}
-End Device: ${data.endDevice || "endDevice:port"}:${data.endPort}
-Required Actions: ${data.actions || "actions"}
-Asset Tag Confirmed: ${data.assetTagConfirmed || "Confirmed?"}
-Cable Label Verified: ${data.alabelConfirmed || "Label?"}
-2nd Tech QC Alias: ${data.secondTech || "secondTech"}`;
+                    return `LINK APPROVAL REQUEST - TASK ID: ${data.taskID || "N/A"}
+
+Task Link: ${data.taskLink || "N/A"}
+Starting Device:Port: ${data.startDevice || "N/A"}:${data.startPort || "N/A"}
+Expected Hop: ${data.expectedHop || "N/A"}
+End Device:Port: ${data.endDevice || "N/A"}:${data.endPort || "N/A"}
+Required Actions: ${data.actions || "N/A"}
+
+Asset Tag Confirmed: ${data.assetTagConfirmed || "N/A"}
+Cable Label Verified: ${data.labelConfirmed || "N/A"}
+2nd Tech QC Alias: ${data.secondTech || "N/A"}`;
                 }
             }
         };
@@ -846,12 +814,7 @@ Cable Label Verified: ${data.alabelConfirmed || "Label?"}
                 
                 const label = document.createElement('label');
                 label.setAttribute('for', field.name);
-                // Check if label contains HTML (like links)
-                if (field.label.includes('<')) {
-                    label.innerHTML = field.label;
-                } else {
-                    label.textContent = field.label;
-                }
+                label.textContent = field.label;
                 
                 // Create the input based on field type
                 let input;
@@ -893,6 +856,8 @@ Cable Label Verified: ${data.alabelConfirmed || "Label?"}
                     });
                 } else if (field.type === 'select' && field.hasConditionalFields) {
                     input.addEventListener('change', handleConditionalFields);
+                } else if (field.type === 'select') {
+                    input.addEventListener('change', updatePreview);
                 } else {
                     input.addEventListener('input', updatePreview);
                 }
@@ -953,12 +918,7 @@ Cable Label Verified: ${data.alabelConfirmed || "Label?"}
                 
                 const condLabel = document.createElement('label');
                 condLabel.setAttribute('for', condField.name);
-                // Check if label contains HTML (like links)
-                if (condField.label.includes('<')) {
-                    condLabel.innerHTML = condField.label;
-                } else {
-                    condLabel.textContent = condField.label;
-                }
+                condLabel.textContent = condField.label;
                 
                 let condInput;
                 if (condField.type === 'textarea') {
@@ -983,20 +943,24 @@ Cable Label Verified: ${data.alabelConfirmed || "Label?"}
                     condInput.type = 'checkbox';
                     condInput.style.marginLeft = '0';
                     condInput.style.marginTop = '10px';
-                    
                 } else {
                     condInput = document.createElement('input');
                     condInput.type = condField.type;
-                    condInput.addEventListener('input', updatePreview);
                 }
                 
                 condInput.id = condField.name;
                 condInput.name = condField.name;
                 
+                // Add event listener based on field type
+                if (condField.type === 'select') {
+                    condInput.addEventListener('change', updatePreview);
+                } else {
+                    condInput.addEventListener('input', updatePreview);
+                }
+                
                 condFormGroup.appendChild(condLabel);
                 condFormGroup.appendChild(condInput);
                 conditionalContainer.appendChild(condFormGroup);
-                
             });
             
             // Add the conditional container to the form
@@ -1140,18 +1104,18 @@ Cable Label Verified: ${data.alabelConfirmed || "Label?"}
             partGroup.appendChild(heading);
             
             // Create common fields for all templates
-                if (currentTemplate === 'mobo') {
-                    createFormField(partGroup, 'Old Motherboard Serial Number', `oldSerialNumber${additionalPartsCounter}`, 'text');
-                    createFormField(partGroup, 'New Motherboard Serial Number', `newSerialNumber${additionalPartsCounter}`, 'text');
-                    createFormField(partGroup, 'License Plate', `licensePlate${additionalPartsCounter}`, 'text');
-                } else {
-                    createFormField(partGroup, 'Old Serial Number', `oldSerialNumber${additionalPartsCounter}`, 'text');
-                    createFormField(partGroup, 'New Serial Number', `newSerialNumber${additionalPartsCounter}`, 'text');
-                    createFormField(partGroup, 'License Plate', `licensePlate${additionalPartsCounter}`, 'text');
-                }
+            if (currentTemplate === 'mobo') {
+                createFormField(partGroup, 'Old Motherboard Serial Number', `oldSerialNumber${additionalPartsCounter}`, 'text');
+                createFormField(partGroup, 'New Motherboard Serial Number', `newSerialNumber${additionalPartsCounter}`, 'text');
+                createFormField(partGroup, 'License Plate', `licensePlate${additionalPartsCounter}`, 'text');
+            } else {
+                createFormField(partGroup, 'Old Serial Number', `oldSerialNumber${additionalPartsCounter}`, 'text');
+                createFormField(partGroup, 'New Serial Number', `newSerialNumber${additionalPartsCounter}`, 'text');
+                createFormField(partGroup, 'License Plate', `licensePlate${additionalPartsCounter}`, 'text');
+            }
 
-                // Add DBD-specific fields
-                if (currentTemplate === 'dbd') {
+            // Add DBD-specific fields
+            if (currentTemplate === 'dbd') {
                 createFormField(partGroup, 'Location of drive being replaced', `driveLocation${additionalPartsCounter}`, 'text');
                 createFormField(partGroup, 'Bin #', `binNumber${additionalPartsCounter}`, 'text');
                 
@@ -1180,7 +1144,7 @@ Cable Label Verified: ${data.alabelConfirmed || "Label?"}
                     properDiscardInput.appendChild(option);
                 });
                 
-                properDiscardInput.addEventListener('input', updatePreview);
+                properDiscardInput.addEventListener('change', updatePreview);
                 
                 properDiscardGroup.appendChild(properDiscardLabel);
                 properDiscardGroup.appendChild(properDiscardInput);
