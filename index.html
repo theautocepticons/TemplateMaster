@@ -6,18 +6,15 @@
     <title>Note Template Generator</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="theme-blue">
+<body class="accent-blue">
     <!-- Theme selector -->
     <div class="theme-selector">
-        <select id="theme-select" aria-label="Select color theme">
-            <option value="blue">Light Blue</option>
-            <option value="purple">Light Purple</option>
-            <option value="green">Light Green</option>
-            <option value="dark">Dark Mode Blue</option>
-            <option value="dark-purple">Dark Mode Purple</option>
-            <option value="dark-green">Dark Mode Green</option>
-            <option value="light">Light Mode</option>
-        </select>
+        <button id="mode-toggle" class="mode-toggle" aria-label="Toggle dark mode">☀️</button>
+        <div class="color-buttons">
+            <button class="color-btn" data-color="blue" aria-label="Blue theme"></button>
+            <button class="color-btn" data-color="purple" aria-label="Purple theme"></button>
+            <button class="color-btn" data-color="green" aria-label="Green theme"></button>
+        </div>
     </div>
 
     <h1>Note Template Generator</h1>

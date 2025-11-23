@@ -313,29 +313,52 @@ templateSelect.addEventListener('change', changeTemplate);
 copyBtn.addEventListener('click', copyToClipboard);
 resetBtn.addEventListener('click', resetForm);
 
-// Theme selector event listener
-const themeSelect = document.getElementById('theme-select');
-themeSelect.addEventListener('change', function() {
-    const selectedTheme = this.value;
-    setTheme(selectedTheme);
+// Theme selector elements
+const modeToggle = document.getElementById('mode-toggle');
+const colorButtons = document.querySelectorAll('.color-btn');
+
+// Initialize theme state
+let isDarkMode = localStorage.getItem('darkMode') === 'true';
+let accentColor = localStorage.getItem('accentColor') || 'blue';
+
+// Apply saved theme on load
+applyTheme();
+
+// Mode toggle event listener
+modeToggle.addEventListener('click', function() {
+    isDarkMode = !isDarkMode;
+    localStorage.setItem('darkMode', isDarkMode);
+    applyTheme();
 });
 
-// Function to set the theme
-function setTheme(theme) {
-    // Remove all theme classes
-    document.body.classList.remove('theme-blue', 'theme-purple', 'theme-green', 'theme-dark', 'theme-dark-purple', 'theme-dark-green','theme-light');
-    // Add the selected theme class
-    document.body.classList.add(`theme-${theme}`);
+// Color button event listeners
+colorButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+        accentColor = this.getAttribute('data-color');
+        localStorage.setItem('accentColor', accentColor);
+        applyTheme();
+    });
+});
 
-    // Save the theme preference to localStorage
-    localStorage.setItem('preferredTheme', theme);
-}
+// Function to apply the theme
+function applyTheme() {
+    // Update dark mode
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+        modeToggle.textContent = '🌙';
+    } else {
+        document.body.classList.remove('dark-mode');
+        modeToggle.textContent = '☀️';
+    }
 
-// Load saved theme preference if it exists
-const savedTheme = localStorage.getItem('preferredTheme');
-if (savedTheme) {
-    themeSelect.value = savedTheme;
-    setTheme(savedTheme);
+    // Update accent color
+    document.body.classList.remove('accent-blue', 'accent-purple', 'accent-green');
+    document.body.classList.add(`accent-${accentColor}`);
+
+    // Update active button state
+    colorButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-color') === accentColor);
+    });
 }
 
 // Function to change template

@@ -9,107 +9,63 @@
     --bg-color: #f5f7fa;
     --card-bg: white;
     --text-color: #333;
-    --border-color: #f0f0f0;
+    --border-color: #e0e0e0;
     --highlight-bg: #f1f9ff;
 }
 
-/* Theme definitions */
-body.theme-blue {
-    --primary-color: #3498db;
-    --primary-hover: #2980b9;
-    --secondary-color: #27ae60;
-    --secondary-hover: #219653;
-    --danger-color: #e74c3c;
-    --danger-hover: #c0392b;
+/* Light mode (default) */
+body {
     --bg-color: #f5f7fa;
     --card-bg: white;
     --text-color: #333;
-    --border-color: #f0f0f0;
+    --border-color: #e0e0e0;
+}
+
+/* Dark mode */
+body.dark-mode {
+    --bg-color: #1a1a2e;
+    --card-bg: #16213e;
+    --text-color: #ecf0f1;
+    --border-color: #2a3a5a;
+}
+
+/* Accent colors - Blue */
+body.accent-blue {
+    --primary-color: #3498db;
+    --primary-hover: #2980b9;
+    --secondary-color: #27ae60;
+    --secondary-hover: #219653;
     --highlight-bg: #f1f9ff;
 }
 
-body.theme-purple {
+body.dark-mode.accent-blue {
+    --highlight-bg: #1a3a5c;
+}
+
+/* Accent colors - Purple */
+body.accent-purple {
     --primary-color: #9b59b6;
     --primary-hover: #8e44ad;
     --secondary-color: #27ae60;
     --secondary-hover: #219653;
-    --danger-color: #e74c3c;
-    --danger-hover: #c0392b;
-    --bg-color: #f8f5fa;
-    --card-bg: white;
-    --text-color: #333;
-    --border-color: #f0e0ff;
     --highlight-bg: #f5e9ff;
 }
 
-body.theme-green {
+body.dark-mode.accent-purple {
+    --highlight-bg: #2d1f4e;
+}
+
+/* Accent colors - Green */
+body.accent-green {
     --primary-color: #2ecc71;
     --primary-hover: #27ae60;
     --secondary-color: #3498db;
     --secondary-hover: #2980b9;
-    --danger-color: #e74c3c;
-    --danger-hover: #c0392b;
-    --bg-color: #f5faf7;
-    --card-bg: white;
-    --text-color: #333;
-    --border-color: #e0f5e0;
     --highlight-bg: #e9ffef;
 }
 
-body.theme-dark {
-    --primary-color: #3498db;
-    --primary-hover: #2980b9;
-    --secondary-color: #2ecc71;
-    --secondary-hover: #27ae60;
-    --danger-color: #e74c3c;
-    --danger-hover: #c0392b;
-    --bg-color: #2c3e50;
-    --card-bg: #34495e;
-    --text-color: #ecf0f1;
-    --border-color: #4a6278;
-    --highlight-bg: #2d4257;
-}
-
-body.theme-dark-purple {
-    --primary-color: #9b59b6;
-    --primary-hover: #8e44ad;
-    --secondary-color: #2ecc71;
-    --secondary-hover: #27ae60;
-    --danger-color: #e74c3c;
-    --danger-hover: #c0392b;
-    --bg-color: #2a2040;
-    --card-bg: #382952;
-    --text-color: #ecf0f1;
-    --border-color: #4a3668;
-    --highlight-bg: #33294d;
-}
-
-body.theme-dark-green {
-    --primary-color: #2ecc71;
-    --primary-hover: #27ae60;
-    --secondary-color: #3498db;
-    --secondary-hover: #2980b9;
-    --danger-color: #e74c3c;
-    --danger-hover: #c0392b;
-    --bg-color: #1e352d;
-    --card-bg: #2d4a3e;
-    --text-color: #ecf0f1;
-    --border-color: #355a4c;
-    --highlight-bg: #2a4439;
-}
-
-body.theme-light {
-    --primary-color: #3498db;
-    --primary-hover: #2980b9;
-    --secondary-color: #27ae60;
-    --secondary-hover: #219653;
-    --danger-color: #e74c3c;
-    --danger-hover: #c0392b;
-    --bg-color: #ffffff;
-    --card-bg: #f9f9f9;
-    --text-color: #333;
-    --border-color: #e0e0e0;
-    --highlight-bg: #f5f9fc;
+body.dark-mode.accent-green {
+    --highlight-bg: #1a3d2e;
 }
 
 /* Base styles */
@@ -343,15 +299,53 @@ select {
     top: 20px;
     right: 20px;
     z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.theme-selector select {
-    padding: 8px 12px;
-    border-radius: 4px;
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
+.mode-toggle {
+    background: none;
+    border: none;
+    font-size: 24px;
     cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+}
+
+.color-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.color-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+}
+
+.color-btn.active {
+    border-color: var(--text-color);
+    box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 4px var(--text-color);
+}
+
+.color-btn[data-color="blue"] {
+    background-color: #3498db;
+}
+
+.color-btn[data-color="purple"] {
+    background-color: #9b59b6;
+}
+
+.color-btn[data-color="green"] {
+    background-color: #2ecc71;
 }
 
 /* Responsive styles */
