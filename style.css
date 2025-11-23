@@ -69,21 +69,39 @@ body.dark-mode.accent-green {
 }
 
 /* Base styles */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Ubuntu', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: var(--text-color);
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
     background-color: var(--bg-color);
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top bar */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.branding {
+    margin: 0;
+    font-size: 1rem;
 }
 
 h1 {
     color: var(--primary-color);
-    text-align: center;
-    margin-bottom: 30px;
 }
 
 h2 {
@@ -97,29 +115,103 @@ h2 {
 .container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    gap: 0;
+    flex: 1;
+    min-height: 0;
 }
 
 .form-section,
 .preview-section {
     background-color: var(--card-bg);
     padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .preview-section {
     position: relative;
+    background-color: var(--highlight-bg);
+    padding: 0;
+}
+
+.preview-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 /* Form elements */
-.form-group {
-    margin-bottom: 20px;
+#template-form {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+#template-form tr:nth-child(even) td {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+#template-form tr:nth-child(even) input[type="text"],
+#template-form tr:nth-child(even) textarea,
+#template-form tr:nth-child(even) select {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+#template-form td:first-child {
+    padding-right: 15px;
+    white-space: nowrap;
+    vertical-align: top;
+    padding-top: 12px;
+    width: 1%;
+}
+
+#template-form td:last-child {
+    width: 100%;
+}
+
+#template-form input,
+#template-form textarea,
+#template-form select {
+    width: 100%;
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 50px !important;
+    height: 26px;
+    background-color: var(--border-color);
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex-shrink: 0;
+}
+
+input[type="checkbox"]::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+input[type="checkbox"]:checked {
+    background-color: var(--primary-color);
+}
+
+input[type="checkbox"]:checked::after {
+    transform: translateX(24px);
 }
 
 label {
-    display: block;
-    margin-bottom: 8px;
     font-weight: 600;
     color: var(--text-color);
 }
@@ -127,7 +219,6 @@ label {
 input[type="text"],
 textarea,
 select {
-    width: 100%;
     padding: 12px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -190,8 +281,10 @@ select {
 }
 
 .button-group {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
     display: flex;
-    margin-top: 20px;
     gap: 10px;
 }
 
@@ -199,10 +292,62 @@ select {
 .conditional-fields-container {
     padding: 15px;
     border-left: 3px solid var(--primary-color);
-    margin-top: 5px;
-    margin-bottom: 15px;
-    background-color: var(--highlight-bg);
-    border-radius: 0 4px 4px 0;
+    margin-top: 15px;
+}
+
+/* Parts table */
+.parts-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    table-layout: fixed;
+}
+
+.parts-table th,
+.parts-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.parts-table th:last-child,
+.parts-table td:last-child {
+    width: 40px;
+}
+
+.parts-table th {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.parts-table input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+}
+
+.parts-table input[type="checkbox"] {
+    width: 40px !important;
+    height: 22px;
+}
+
+.delete-row-btn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+}
+
+.delete-row-btn:hover {
+    background-color: var(--danger-hover);
 }
 
 /* Additional parts */
@@ -252,23 +397,19 @@ select {
 
 /* Preview section */
 #preview {
-    background-color: var(--highlight-bg);
     padding: 20px;
-    border-radius: 4px;
-    border: 1px solid var(--border-color);
-    min-height: 300px;
+    padding-bottom: 4rem;
+    flex: 1;
     white-space: pre-wrap;
     word-wrap: break-word;
     overflow-wrap: break-word;
     word-break: break-all;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 14px;
-    margin-top: 15px;
     overflow-y: auto;
     overflow-x: hidden;
     line-height: 1.5;
     color: var(--text-color);
-    max-width: 100%;
 }
 
 .copy-message {
@@ -295,10 +436,6 @@ select {
 
 /* Theme selector */
 .theme-selector {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 100;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -354,9 +491,8 @@ select {
         grid-template-columns: 1fr;
     }
 
-    .theme-selector {
-        position: static;
-        margin-bottom: 20px;
-        text-align: right;
+    .top-bar {
+        flex-direction: column;
+        gap: 1rem;
     }
 }
