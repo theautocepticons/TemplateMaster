@@ -1,54 +1,140 @@
+// Constants
+const CHECKED = "checked";
+const DEFAULT_VALUE = "N/A";
+const DEFAULT_PLACEHOLDER = "[Not specified]";
+
+// Format helper functions
+function formatCheckbox(value) {
+    return value === CHECKED ? "Yes" : "No";
+}
+
+function formatEscalationInfo(data) {
+    if (data.wasEscalated === CHECKED) {
+        return `
+
+ESCALATION DETAILS:
+- Escalated To: ${data.escalatedTo || DEFAULT_PLACEHOLDER}
+- Senior Tech Approval: ${data.seniorTechAlias || DEFAULT_PLACEHOLDER}`;
+    }
+    return "";
+}
+
+function formatPartReplacementInfo(data, includeDBDFields = false) {
+    if (data.partReplaced === CHECKED) {
+        let info = `
+
+PART(S) REPLACED: Yes
+OLD SERIAL NUMBER: ${data.oldSerialNumber || DEFAULT_VALUE}
+NEW SERIAL NUMBER: ${data.newSerialNumber || DEFAULT_VALUE}
+LICENSE PLATE: ${data.licensePlate || DEFAULT_VALUE}`;
+
+        if (includeDBDFields) {
+            info += `
+DRIVE LOCATION: ${data.driveLocation || DEFAULT_VALUE}
+BIN #: ${data.binNumber || DEFAULT_VALUE}
+DRIVE DISCARDED IN PROPER DBD BIN: ${formatCheckbox(data.properDiscard)}`;
+        }
+        return info;
+    }
+    return "\nPART(S) REPLACED: No";
+}
+
+// DOM element creation helpers
+function createInput(field) {
+    let input;
+    if (field.type === 'textarea') {
+        input = document.createElement('textarea');
+    } else if (field.type === 'select' && field.options) {
+        input = document.createElement('select');
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = '-- Select --';
+        input.appendChild(emptyOption);
+        field.options.forEach(optionText => {
+            const option = document.createElement('option');
+            option.value = optionText;
+            option.textContent = optionText;
+            input.appendChild(option);
+        });
+    } else if (field.type === 'checkbox') {
+        input = document.createElement('input');
+        input.type = 'checkbox';
+    } else {
+        input = document.createElement('input');
+        input.type = field.type;
+    }
+
+    if (field.name) {
+        input.id = field.name;
+        input.name = field.name;
+    }
+
+    return input;
+}
+
+function createInfoElement(text) {
+    const element = document.createElement('div');
+    element.style.padding = '12px';
+    element.style.backgroundColor = 'var(--highlight-bg)';
+    element.style.borderLeft = '3px solid var(--primary-color)';
+    element.style.borderRadius = '4px';
+    element.style.fontSize = '14px';
+    element.style.lineHeight = '1.5';
+    element.style.color = 'var(--text-color)';
+    element.style.overflowWrap = 'break-word';
+    element.style.wordBreak = 'break-word';
+
+    if (text && text.includes('<')) {
+        element.innerHTML = text;
+    } else {
+        element.textContent = text;
+    }
+
+    return element;
+}
+
+// Shared field definitions
+const commonTaskFields = [
+    { name: "taskId", label: "Task ID", type: "text" },
+    { name: "assetTagConfirmed", label: "Was the asset tag visually confirmed?", type: "checkbox" },
+    { name: "uponArrival", label: "Upon Arrival:", type: "textarea" }
+];
+
+const partReplacementFields = [
+    { name: "partReplaced", label: "Part(s) replaced?", type: "checkbox", hasConditionalFields: true },
+    { name: "oldSerialNumber", label: "Old Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: CHECKED } },
+    { name: "newSerialNumber", label: "New Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: CHECKED } },
+    { name: "licensePlate", label: "License Plate", type: "text", conditionalOn: { field: "partReplaced", value: CHECKED } }
+];
+
+const escalationFields = [
+    { name: "actionsTaken", label: "Actions Taken", type: "textarea" },
+    { name: "wasEscalated", label: "Was this ticket escalated?", type: "checkbox", hasConditionalFields: true },
+    { name: "escalatedTo", label: "Who was it escalated to?", type: "text", conditionalOn: { field: "wasEscalated", value: CHECKED } },
+    { name: "seniorTechAlias", label: "Alias of the senior who approved this:", type: "text", conditionalOn: { field: "wasEscalated", value: CHECKED } }
+];
+
 // Template definitions
 const templates = {
     // Break/Fix Task Notes template
     breakfix: {
         title: "Break/Fix Task Notes",
         fields: [
-            { name: "taskId", label: "Task ID", type: "text" },
-            { name: "assetTagConfirmed", label: "Was the asset tag visually confirmed?", type: "checkbox" },
-            { name: "uponArrival", label: "Upon Arrival:", type: "textarea" },
-            { name: "partReplaced", label: "Part(s) replaced?", type: "checkbox", hasConditionalFields: true },
-            { name: "oldSerialNumber", label: "Old Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "newSerialNumber", label: "New Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "licensePlate", label: "License Plate", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "actionsTaken", label: "Actions Taken", type: "textarea" },
-            { name: "wasEscalated", label: "Was this ticket escalated?", type: "checkbox", hasConditionalFields: true },
-            { name: "escalatedTo", label: "Who was it escalated to?", type: "text", conditionalOn: { field: "wasEscalated", value: "checked" } },
-            { name: "seniorTechAlias", label: "Alias of the senior who approved this:", type: "text", conditionalOn: { field: "wasEscalated", value: "checked" } }
+            ...commonTaskFields,
+            ...partReplacementFields,
+            ...escalationFields
         ],
         format: (data) => {
-            let escalationInfo = "";
-            if (data.wasEscalated === "checked") {
-                escalationInfo = `
-
-ESCALATION DETAILS:
-- Escalated To: ${data.escalatedTo || "[Not specified]"}
-- Senior Tech Approval: ${data.seniorTechAlias || "[Not specified]"}`;
-            }
-
-            // Format part replacement information
-            let partReplacementInfo = "";
-            if (data.partReplaced === "checked") {
-                partReplacementInfo = `
-
-PART(S) REPLACED: Yes
-OLD SERIAL NUMBER: ${data.oldSerialNumber || "N/A"}
-NEW SERIAL NUMBER: ${data.newSerialNumber || "N/A"}
-LICENSE PLATE: ${data.licensePlate || "N/A"}`;
-            } else {
-                partReplacementInfo = "\nPART(S) REPLACED: No";
-            }
-
             return `TASK ID: ${data.taskId || "[No ID]"}
-ASSET TAG CONFIRMED: ${data.assetTagConfirmed === "checked" ? "Yes" : "No"}
+ASSET TAG CONFIRMED: ${formatCheckbox(data.assetTagConfirmed)}
 
 UPON ARRIVAL:
-${data.uponArrival || "[No arrival notes recorded]"}${partReplacementInfo}
+${data.uponArrival || "[No arrival notes recorded]"}${formatPartReplacementInfo(data)}
 
 ACTIONS TAKEN:
 ${data.actionsTaken || "[No actions recorded]"}
 
-TICKET ESCALATED: ${data.wasEscalated === "checked" ? "Yes" : "No"}${escalationInfo}`;
+TICKET ESCALATED: ${formatCheckbox(data.wasEscalated)}${formatEscalationInfo(data)}`;
         }
     },
 
@@ -56,55 +142,25 @@ TICKET ESCALATED: ${data.wasEscalated === "checked" ? "Yes" : "No"}${escalationI
     network: {
         title: "Network Task Notes",
         fields: [
-            { name: "taskId", label: "Task ID", type: "text" },
-            { name: "assetTagConfirmed", label: "Was the asset tag visually confirmed?", type: "checkbox" },
-            { name: "uponArrival", label: "Upon Arrival:", type: "textarea" },
+            ...commonTaskFields,
             { name: "sourceDevice", label: "Source Device:Port", type: "text" },
             { name: "endDevice", label: "End Device:Port", type: "text" },
-            { name: "partReplaced", label: "Part(s) replaced?", type: "checkbox", hasConditionalFields: true },
-            { name: "oldSerialNumber", label: "Old Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "newSerialNumber", label: "New Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "licensePlate", label: "License Plate", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "actionsTaken", label: "Actions Taken", type: "textarea" },
-            { name: "wasEscalated", label: "Was this ticket escalated?", type: "checkbox", hasConditionalFields: true },
-            { name: "escalatedTo", label: "Who was it escalated to?", type: "text", conditionalOn: { field: "wasEscalated", value: "checked" } },
-            { name: "seniorTechAlias", label: "Alias of the senior who approved this:", type: "text", conditionalOn: { field: "wasEscalated", value: "checked" } }
+            ...partReplacementFields,
+            ...escalationFields
         ],
         format: (data) => {
-            let escalationInfo = "";
-            if (data.wasEscalated === "checked") {
-                escalationInfo = `
-
-ESCALATION DETAILS:
-- Escalated To: ${data.escalatedTo || "[Not specified]"}
-- Senior Tech Approval: ${data.seniorTechAlias || "[Not specified]"}`;
-            }
-
-            // Format part replacement information
-            let partReplacementInfo = "";
-            if (data.partReplaced === "checked") {
-                partReplacementInfo = `
-
-PART(S) REPLACED: Yes
-OLD SERIAL NUMBER: ${data.oldSerialNumber || "N/A"}
-NEW SERIAL NUMBER: ${data.newSerialNumber || "N/A"}
-LICENSE PLATE: ${data.licensePlate || "N/A"}`;
-            } else {
-                partReplacementInfo = "\nPART(S) REPLACED: No";
-            }
-
             return `TASK ID: ${data.taskId || "[No ID]"}
-ASSET TAG CONFIRMED: ${data.assetTagConfirmed === "checked" ? "Yes" : "No"}
+ASSET TAG CONFIRMED: ${formatCheckbox(data.assetTagConfirmed)}
 
 UPON ARRIVAL:
 ${data.uponArrival || "[No arrival notes recorded]"}
-SOURCE DEVICE:PORT: ${data.sourceDevice || "N/A"}
-END DEVICE:PORT: ${data.endDevice || "N/A"}${partReplacementInfo}
+SOURCE DEVICE:PORT: ${data.sourceDevice || DEFAULT_VALUE}
+END DEVICE:PORT: ${data.endDevice || DEFAULT_VALUE}${formatPartReplacementInfo(data)}
 
 ACTIONS TAKEN:
 ${data.actionsTaken || "[No actions recorded]"}
 
-TICKET ESCALATED: ${data.wasEscalated === "checked" ? "Yes" : "No"}${escalationInfo}`;
+TICKET ESCALATED: ${formatCheckbox(data.wasEscalated)}${formatEscalationInfo(data)}`;
         }
     },
 
@@ -112,57 +168,24 @@ TICKET ESCALATED: ${data.wasEscalated === "checked" ? "Yes" : "No"}${escalationI
     dbd: {
         title: "DBD Task Notes",
         fields: [
-            { name: "taskId", label: "Task ID", type: "text" },
-            { name: "assetTagConfirmed", label: "Was the asset tag visually confirmed?", type: "checkbox" },
-            { name: "uponArrival", label: "Upon Arrival:", type: "textarea" },
-            { name: "partReplaced", label: "Part(s) replaced?", type: "checkbox", hasConditionalFields: true },
-            { name: "oldSerialNumber", label: "Old Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "newSerialNumber", label: "New Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "licensePlate", label: "License Plate", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "driveLocation", label: "Location of drive being replaced", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "binNumber", label: "Bin #", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "properDiscard", label: "Was the drive discarded in the proper DBD bin?", type: "checkbox", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "actionsTaken", label: "Actions Taken", type: "textarea" },
-            { name: "wasEscalated", label: "Was this ticket escalated?", type: "checkbox", hasConditionalFields: true },
-            { name: "escalatedTo", label: "Who was it escalated to?", type: "text", conditionalOn: { field: "wasEscalated", value: "checked" } },
-            { name: "seniorTechAlias", label: "Alias of the senior who approved this:", type: "text", conditionalOn: { field: "wasEscalated", value: "checked" } }
+            ...commonTaskFields,
+            ...partReplacementFields,
+            { name: "driveLocation", label: "Location of drive being replaced", type: "text", conditionalOn: { field: "partReplaced", value: CHECKED } },
+            { name: "binNumber", label: "Bin #", type: "text", conditionalOn: { field: "partReplaced", value: CHECKED } },
+            { name: "properDiscard", label: "Was the drive discarded in the proper DBD bin?", type: "checkbox", conditionalOn: { field: "partReplaced", value: CHECKED } },
+            ...escalationFields
         ],
         format: (data) => {
-            let escalationInfo = "";
-            if (data.wasEscalated === "checked") {
-                escalationInfo = `
-
-ESCALATION DETAILS:
-- Escalated To: ${data.escalatedTo || "[Not specified]"}
-- Senior Tech Approval: ${data.seniorTechAlias || "[Not specified]"}`;
-            }
-
-            // Format part replacement information
-            let partReplacementInfo = "";
-            if (data.partReplaced === "checked") {
-                partReplacementInfo = `
-
-PART(S) REPLACED: Yes
-OLD SERIAL NUMBER: ${data.oldSerialNumber || "N/A"}
-NEW SERIAL NUMBER: ${data.newSerialNumber || "N/A"}
-LICENSE PLATE: ${data.licensePlate || "N/A"}
-DRIVE LOCATION: ${data.driveLocation || "N/A"}
-BIN #: ${data.binNumber || "N/A"}
-DRIVE DISCARDED IN PROPER DBD BIN: ${data.properDiscard === "checked" ? "Yes" : "No"}`;
-            } else {
-                partReplacementInfo = "\nPART(S) REPLACED: No";
-            }
-
             return `TASK ID: ${data.taskId || "[No ID]"}
-ASSET TAG CONFIRMED: ${data.assetTagConfirmed === "checked" ? "Yes" : "No"}
+ASSET TAG CONFIRMED: ${formatCheckbox(data.assetTagConfirmed)}
 
 UPON ARRIVAL:
-${data.uponArrival || "[No arrival notes recorded]"}${partReplacementInfo}
+${data.uponArrival || "[No arrival notes recorded]"}${formatPartReplacementInfo(data, true)}
 
 ACTIONS TAKEN:
 ${data.actionsTaken || "[No actions recorded]"}
 
-TICKET ESCALATED: ${data.wasEscalated === "checked" ? "Yes" : "No"}${escalationInfo}`;
+TICKET ESCALATED: ${formatCheckbox(data.wasEscalated)}${formatEscalationInfo(data)}`;
         }
     },
 
@@ -170,58 +193,44 @@ TICKET ESCALATED: ${data.wasEscalated === "checked" ? "Yes" : "No"}${escalationI
     mobo: {
         title: "Motherboard Task Notes",
         fields: [
-            { name: "taskId", label: "Task ID", type: "text" },
-            { name: "assetTagConfirmed", label: "Was the asset tag visually confirmed?", type: "checkbox" },
-            { name: "uponArrival", label: "Upon Arrival:", type: "textarea" },
+            ...commonTaskFields,
             { name: "partReplaced", label: "Part(s) replaced?", type: "checkbox", hasConditionalFields: true },
-            { name: "oldSerialNumber", label: "Old Motherboard Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "newSerialNumber", label: "New Motherboard Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
-            { name: "licensePlate", label: "License Plate", type: "text", conditionalOn: { field: "partReplaced", value: "checked" } },
+            { name: "oldSerialNumber", label: "Old Motherboard Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: CHECKED } },
+            { name: "newSerialNumber", label: "New Motherboard Serial Number", type: "text", conditionalOn: { field: "partReplaced", value: CHECKED } },
+            { name: "licensePlate", label: "License Plate", type: "text", conditionalOn: { field: "partReplaced", value: CHECKED } },
             { name: "dbdMoved", label: "Were DBDs moved from old motherboard to new?", type: "checkbox", hasConditionalFields: true },
-            { name: "dbdSerialNumber", label: "DBD Serial Number", type: "text", conditionalOn: { field: "dbdMoved", value: "checked" } },
-            { name: "slotNumber", label: "Slot #", type: "text", conditionalOn: { field: "dbdMoved", value: "checked" } },
-            { name: "actionsTaken", label: "Actions Taken", type: "textarea" },
-            { name: "wasEscalated", label: "Was this ticket escalated?", type: "checkbox", hasConditionalFields: true },
-            { name: "escalatedTo", label: "Who was it escalated to?", type: "text", conditionalOn: { field: "wasEscalated", value: "checked" } },
-            { name: "seniorTechAlias", label: "Alias of the senior who approved this:", type: "text", conditionalOn: { field: "wasEscalated", value: "checked" } }
+            { name: "dbdSerialNumber", label: "DBD Serial Number", type: "text", conditionalOn: { field: "dbdMoved", value: CHECKED } },
+            { name: "slotNumber", label: "Slot #", type: "text", conditionalOn: { field: "dbdMoved", value: CHECKED } },
+            ...escalationFields
         ],
         format: (data) => {
-            let escalationInfo = "";
-            if (data.wasEscalated === "checked") {
-                escalationInfo = `
-
-ESCALATION DETAILS:
-- Escalated To: ${data.escalatedTo || "[Not specified]"}
-- Senior Tech Approval: ${data.seniorTechAlias || "[Not specified]"}`;
-            }
-
-            // Format motherboard replacement information
+            // Motherboard uses different labels
             let partReplacementInfo = "";
-            if (data.partReplaced === "checked") {
+            if (data.partReplaced === CHECKED) {
                 partReplacementInfo = `
 
 PART(S) REPLACED: Yes
-OLD MOTHERBOARD SERIAL NUMBER: ${data.oldSerialNumber || "N/A"}
-NEW MOTHERBOARD SERIAL NUMBER: ${data.newSerialNumber || "N/A"}
-LICENSE PLATE: ${data.licensePlate || "N/A"}`;
+OLD MOTHERBOARD SERIAL NUMBER: ${data.oldSerialNumber || DEFAULT_VALUE}
+NEW MOTHERBOARD SERIAL NUMBER: ${data.newSerialNumber || DEFAULT_VALUE}
+LICENSE PLATE: ${data.licensePlate || DEFAULT_VALUE}`;
             } else {
                 partReplacementInfo = "\nPART(S) REPLACED: No";
             }
 
             // Format DBD information
             let dbdInfo = "";
-            if (data.dbdMoved === "checked") {
+            if (data.dbdMoved === CHECKED) {
                 dbdInfo = `
 
 DBD(S) MOVED FROM OLD TO NEW MOTHERBOARD: Yes
-DBD SERIAL NUMBER: ${data.dbdSerialNumber || "N/A"}
-SLOT #: ${data.slotNumber || "N/A"}`;
+DBD SERIAL NUMBER: ${data.dbdSerialNumber || DEFAULT_VALUE}
+SLOT #: ${data.slotNumber || DEFAULT_VALUE}`;
             } else {
                 dbdInfo = "\nDBD(S) MOVED: No";
             }
 
             return `TASK ID: ${data.taskId || "[No ID]"}
-ASSET TAG CONFIRMED: ${data.assetTagConfirmed === "checked" ? "Yes" : "No"}
+ASSET TAG CONFIRMED: ${formatCheckbox(data.assetTagConfirmed)}
 
 UPON ARRIVAL:
 ${data.uponArrival || "[No arrival notes recorded]"}${partReplacementInfo}${dbdInfo}
@@ -229,7 +238,7 @@ ${data.uponArrival || "[No arrival notes recorded]"}${partReplacementInfo}${dbdI
 ACTIONS TAKEN:
 ${data.actionsTaken || "[No actions recorded]"}
 
-TICKET ESCALATED: ${data.wasEscalated === "checked" ? "Yes" : "No"}${escalationInfo}`;
+TICKET ESCALATED: ${formatCheckbox(data.wasEscalated)}${formatEscalationInfo(data)}`;
         }
     },
 
@@ -282,8 +291,8 @@ Expected Hop: ${data.expectedHop || "N/A"}
 End Device:Port: ${data.endDevice || "N/A"}
 Required Actions: ${data.actionsTaken || "N/A"}
 
-Asset Tag Confirmed: ${data.assetTagConfirmed === "checked" ? "Yes" : "No"}
-Cable Label Verified: ${data.labelConfirmed === "checked" ? "Yes" : "No"}
+Asset Tag Confirmed: ${formatCheckbox(data.assetTagConfirmed)}
+Cable Label Verified: ${formatCheckbox(data.labelConfirmed)}
 2nd Tech QC Alias: ${data.secondTech || "N/A"}`;
         }
     }
@@ -360,43 +369,53 @@ function applyTheme() {
 
 // Function to change template
 function changeTemplate() {
-    // Save current form data before switching
-    const savedData = {};
-    const template = templates[currentTemplate];
-    template.fields.forEach(field => {
-        if (field.name) {
-            const input = document.getElementById(field.name);
-            if (input) {
-                if (field.type === 'checkbox') {
-                    savedData[field.name] = input.checked;
-                } else {
-                    savedData[field.name] = input.value;
+    const previousTemplate = currentTemplate;
+    const newTemplateValue = templateSelect.value;
+
+    // Only preserve data between network and workAuth templates
+    const shouldPreserveData =
+        (previousTemplate === 'network' && newTemplateValue === 'workAuth') ||
+        (previousTemplate === 'workAuth' && newTemplateValue === 'network');
+
+    let savedData = {};
+    if (shouldPreserveData) {
+        const template = templates[previousTemplate];
+        template.fields.forEach(field => {
+            if (field.name) {
+                const input = document.getElementById(field.name);
+                if (input) {
+                    if (field.type === 'checkbox') {
+                        savedData[field.name] = input.checked;
+                    } else {
+                        savedData[field.name] = input.value;
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 
-    currentTemplate = templateSelect.value;
+    currentTemplate = newTemplateValue;
     generateFormFields();
 
-    // Restore matching fields in the new template
-    const newTemplate = templates[currentTemplate];
-    newTemplate.fields.forEach(field => {
-        if (field.name && savedData[field.name] !== undefined) {
-            const input = document.getElementById(field.name);
-            if (input) {
-                if (field.type === 'checkbox') {
-                    input.checked = savedData[field.name];
-                    // Trigger visibility update for conditional fields
-                    if (field.hasConditionalFields) {
-                        updateConditionalFieldsVisibility(input);
+    // Restore matching fields only if preserving data
+    if (shouldPreserveData) {
+        const newTemplate = templates[currentTemplate];
+        newTemplate.fields.forEach(field => {
+            if (field.name && savedData[field.name] !== undefined) {
+                const input = document.getElementById(field.name);
+                if (input) {
+                    if (field.type === 'checkbox') {
+                        input.checked = savedData[field.name];
+                        if (field.hasConditionalFields) {
+                            updateConditionalFieldsVisibility(input);
+                        }
+                    } else {
+                        input.value = savedData[field.name];
                     }
-                } else {
-                    input.value = savedData[field.name];
                 }
             }
-        }
-    });
+        });
+    }
 
     updatePreview();
 }
@@ -409,41 +428,37 @@ function generateFormFields() {
 
     const template = templates[currentTemplate];
 
-    // Create a table body for the form fields
-    const tbody = document.createElement('tbody');
+    // Separate info fields from form fields
+    const infoFieldsBefore = [];
+    const infoFieldsAfter = [];
+    const formFields = [];
+    let foundFormField = false;
 
-    // First pass: Create all regular fields (non-conditional)
     template.fields.forEach(field => {
-        // Skip conditional fields - we'll add them after their parent field
-        if (field.conditionalOn) {
-            return;
-        }
+        if (field.conditionalOn) return;
 
-        // Handle info/text-only fields
         if (field.type === 'info') {
-            const tr = document.createElement('tr');
-            const td = document.createElement('td');
-            td.colSpan = 2;
-            td.style.padding = '12px';
-            td.style.backgroundColor = 'var(--highlight-bg)';
-            td.style.borderLeft = '3px solid var(--primary-color)';
-            td.style.borderRadius = '4px';
-            td.style.fontSize = '14px';
-            td.style.lineHeight = '1.5';
-            td.style.color = 'var(--text-color)';
-
-            // Check if text contains HTML
-            if (field.text && field.text.includes('<')) {
-                td.innerHTML = field.text;
+            if (foundFormField) {
+                infoFieldsAfter.push(field);
             } else {
-                td.textContent = field.text || field.label;
+                infoFieldsBefore.push(field);
             }
-
-            tr.appendChild(td);
-            tbody.appendChild(tr);
-            return;
+        } else {
+            foundFormField = true;
+            formFields.push(field);
         }
+    });
 
+    // Add info elements before table
+    infoFieldsBefore.forEach(field => {
+        const infoElement = createInfoElement(field.text || field.label);
+        infoElement.style.marginBottom = '15px';
+        templateForm.appendChild(infoElement);
+    });
+
+    // Create table with form fields
+    const tbody = document.createElement('tbody');
+    formFields.forEach(field => {
         const tr = document.createElement('tr');
 
         // Label cell
@@ -455,36 +470,7 @@ function generateFormFields() {
 
         // Input cell
         const inputCell = document.createElement('td');
-
-        // Create the input based on field type
-        let input;
-        if (field.type === 'textarea') {
-            input = document.createElement('textarea');
-        } else if (field.type === 'select' && field.options) {
-            input = document.createElement('select');
-            // Add an empty option first
-            const emptyOption = document.createElement('option');
-            emptyOption.value = '';
-            emptyOption.textContent = '-- Select --';
-            input.appendChild(emptyOption);
-
-            // Add the rest of the options
-            field.options.forEach(optionText => {
-                const option = document.createElement('option');
-                option.value = optionText;
-                option.textContent = optionText;
-                input.appendChild(option);
-            });
-        } else if (field.type === 'checkbox') {
-            input = document.createElement('input');
-            input.type = 'checkbox';
-        } else {
-            input = document.createElement('input');
-            input.type = field.type;
-        }
-
-        input.id = field.name;
-        input.name = field.name;
+        const input = createInput(field);
 
         // Add event listeners
         if (field.type === 'checkbox' && field.hasConditionalFields) {
@@ -506,7 +492,16 @@ function generateFormFields() {
         tbody.appendChild(tr);
     });
 
-    templateForm.appendChild(tbody);
+    if (tbody.children.length > 0) {
+        templateForm.appendChild(tbody);
+    }
+
+    // Add info elements after table
+    infoFieldsAfter.forEach(field => {
+        const infoElement = createInfoElement(field.text || field.label);
+        infoElement.style.marginTop = '15px';
+        templateForm.appendChild(infoElement);
+    });
 
     // Add conditional field containers after the table
     template.fields.forEach(field => {
@@ -594,27 +589,55 @@ function addConditionalFieldsForParent(parentFieldName, template) {
         return;
     }
 
-    // Add each conditional field to the container (for non-parts fields)
+    // Special handling for dbdMoved - use table layout
+    if (parentFieldName === 'dbdMoved' && currentTemplate === 'mobo') {
+        // Create DBD table
+        const dbdTable = document.createElement('table');
+        dbdTable.id = 'dbds-table';
+        dbdTable.className = 'parts-table';
+
+        // Create header row
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+
+        const headers = ['DBD Serial', 'Slot #', ''];
+
+        headers.forEach(text => {
+            const th = document.createElement('th');
+            th.textContent = text;
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        dbdTable.appendChild(thead);
+
+        // Create tbody
+        const tbody = document.createElement('tbody');
+        tbody.id = 'dbds-table-body';
+
+        // Add first row
+        tbody.appendChild(createDBDTableRow(0));
+
+        dbdTable.appendChild(tbody);
+        conditionalContainer.appendChild(dbdTable);
+
+        // Add "Add Row" button
+        const addRowBtn = document.createElement('div');
+        addRowBtn.className = 'add-more-link';
+        addRowBtn.textContent = '+ Add Another DBD';
+        addRowBtn.addEventListener('click', addDBDTableRow);
+        conditionalContainer.appendChild(addRowBtn);
+
+        // Add the conditional container to the form
+        templateForm.appendChild(conditionalContainer);
+        return;
+    }
+
+    // Add each conditional field to the container (for non-parts/non-dbd fields)
     conditionalFields.forEach(condField => {
         // Handle info/text-only conditional fields
         if (condField.type === 'info') {
-            const infoDiv = document.createElement('div');
-            infoDiv.style.padding = '12px';
+            const infoDiv = createInfoElement(condField.text || condField.label);
             infoDiv.style.margin = '10px 0';
-            infoDiv.style.backgroundColor = '#f9f9f9';
-            infoDiv.style.borderLeft = '3px solid var(--primary-color)';
-            infoDiv.style.borderRadius = '4px';
-            infoDiv.style.fontSize = '14px';
-            infoDiv.style.lineHeight = '1.5';
-            infoDiv.style.color = 'var(--text-color)';
-
-            // Check if text contains HTML
-            if (condField.text && condField.text.includes('<')) {
-                infoDiv.innerHTML = condField.text;
-            } else {
-                infoDiv.textContent = condField.text || condField.label;
-            }
-
             conditionalContainer.appendChild(infoDiv);
             return;
         }
@@ -626,36 +649,11 @@ function addConditionalFieldsForParent(parentFieldName, template) {
         condLabel.setAttribute('for', condField.name);
         condLabel.textContent = condField.label;
 
-        let condInput;
-        if (condField.type === 'textarea') {
-            condInput = document.createElement('textarea');
-        } else if (condField.type === 'select' && condField.options) {
-            condInput = document.createElement('select');
-            // Add an empty option first
-            const emptyOption = document.createElement('option');
-            emptyOption.value = '';
-            emptyOption.textContent = '-- Select --';
-            condInput.appendChild(emptyOption);
-
-            // Add the rest of the options
-            condField.options.forEach(optionText => {
-                const option = document.createElement('option');
-                option.value = optionText;
-                option.textContent = optionText;
-                condInput.appendChild(option);
-            });
-        } else if (condField.type === 'checkbox') {
-            condInput = document.createElement('input');
-            condInput.type = 'checkbox';
+        const condInput = createInput(condField);
+        if (condField.type === 'checkbox') {
             condInput.style.marginLeft = '0';
             condInput.style.marginTop = '10px';
-        } else {
-            condInput = document.createElement('input');
-            condInput.type = condField.type;
         }
-
-        condInput.id = condField.name;
-        condInput.name = condField.name;
 
         // Add event listener based on field type
         if (condField.type === 'select') {
@@ -671,29 +669,6 @@ function addConditionalFieldsForParent(parentFieldName, template) {
 
     // Add the conditional container to the form
     templateForm.appendChild(conditionalContainer);
-
-    // Add "Add More DBDs" for motherboard template
-    if (parentFieldName === 'dbdMoved' && currentTemplate === 'mobo') {
-        const additionalDBDsWrapper = document.createElement('div');
-        additionalDBDsWrapper.className = 'additional-parts-wrapper';
-
-        const additionalDBDsContainer = document.createElement('div');
-        additionalDBDsContainer.id = 'additional-dbds-container';
-        additionalDBDsWrapper.appendChild(additionalDBDsContainer);
-
-        const addMoreDBDContainer = document.createElement('div');
-        addMoreDBDContainer.id = 'add-more-dbd-container';
-
-        const addMoreDBDLink = document.createElement('div');
-        addMoreDBDLink.className = 'add-more-link';
-        addMoreDBDLink.textContent = '+ Add More DBDs';
-        addMoreDBDLink.addEventListener('click', addMoreDBDs);
-
-        addMoreDBDContainer.appendChild(addMoreDBDLink);
-        additionalDBDsWrapper.appendChild(addMoreDBDContainer);
-
-        conditionalContainer.appendChild(additionalDBDsWrapper);
-    }
 }
 
 
@@ -846,11 +821,71 @@ function deletePartsTableRow(row) {
 
 // Function to reset additional DBDs
 function resetAdditionalDBDs() {
-    const additionalDBDsContainer = document.getElementById('additional-dbds-container');
-    if (additionalDBDsContainer) {
-        additionalDBDsContainer.innerHTML = '';
+    const tbody = document.getElementById('dbds-table-body');
+    if (tbody) {
+        tbody.innerHTML = '';
+        tbody.appendChild(createDBDTableRow(0));
     }
     additionalDBDsCounter = 0;
+}
+
+// Function to create a DBD table row
+function createDBDTableRow(index) {
+    const tr = document.createElement('tr');
+    tr.dataset.rowIndex = index;
+
+    // DBD Serial Number
+    let td = document.createElement('td');
+    let input = document.createElement('input');
+    input.type = 'text';
+    input.name = `dbdSerialNumber${index}`;
+    input.id = `dbdSerialNumber${index}`;
+    input.addEventListener('input', updatePreview);
+    td.appendChild(input);
+    tr.appendChild(td);
+
+    // Slot #
+    td = document.createElement('td');
+    input = document.createElement('input');
+    input.type = 'text';
+    input.name = `slotNumber${index}`;
+    input.id = `slotNumber${index}`;
+    input.addEventListener('input', updatePreview);
+    td.appendChild(input);
+    tr.appendChild(td);
+
+    // Delete button
+    td = document.createElement('td');
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'delete-row-btn';
+    deleteBtn.textContent = '×';
+    deleteBtn.addEventListener('click', function() {
+        deleteDBDTableRow(tr);
+    });
+    td.appendChild(deleteBtn);
+    tr.appendChild(td);
+
+    return tr;
+}
+
+// Function to add a new row to the DBD table
+function addDBDTableRow() {
+    additionalDBDsCounter++;
+    const tbody = document.getElementById('dbds-table-body');
+    if (tbody) {
+        tbody.appendChild(createDBDTableRow(additionalDBDsCounter));
+        updatePreview();
+    }
+}
+
+// Function to delete a row from the DBD table
+function deleteDBDTableRow(row) {
+    const tbody = document.getElementById('dbds-table-body');
+    if (tbody && tbody.children.length > 1) {
+        row.remove();
+        updatePreview();
+    }
 }
 
 // Function to handle showing/hiding conditional fields
@@ -870,108 +905,6 @@ function handleConditionalFields(event) {
             inputs.forEach(input => input.value = '');
         }
     });
-
-    updatePreview();
-}
-
-// Function to add more parts
-function addMoreParts() {
-    additionalPartsCounter++;
-    const container = document.getElementById('additional-parts-container');
-
-    const partGroup = document.createElement('div');
-    partGroup.className = 'additional-part-group';
-    partGroup.id = `additional-part-${additionalPartsCounter}`;
-
-    // Create a heading
-    const heading = document.createElement('h4');
-    heading.textContent = `Additional Part ${additionalPartsCounter}`;
-    heading.style.marginTop = '0';
-    partGroup.appendChild(heading);
-
-    // Create common fields for all templates
-    if (currentTemplate === 'mobo') {
-        createFormField(partGroup, 'Old Motherboard Serial Number', `oldSerialNumber${additionalPartsCounter}`, 'text');
-        createFormField(partGroup, 'New Motherboard Serial Number', `newSerialNumber${additionalPartsCounter}`, 'text');
-        createFormField(partGroup, 'License Plate', `licensePlate${additionalPartsCounter}`, 'text');
-    } else {
-        createFormField(partGroup, 'Old Serial Number', `oldSerialNumber${additionalPartsCounter}`, 'text');
-        createFormField(partGroup, 'New Serial Number', `newSerialNumber${additionalPartsCounter}`, 'text');
-        createFormField(partGroup, 'License Plate', `licensePlate${additionalPartsCounter}`, 'text');
-    }
-
-    // Add DBD-specific fields
-    if (currentTemplate === 'dbd') {
-        createFormField(partGroup, 'Location of drive being replaced', `driveLocation${additionalPartsCounter}`, 'text');
-        createFormField(partGroup, 'Bin #', `binNumber${additionalPartsCounter}`, 'text');
-
-        // Add checkbox field for proper discard
-        const properDiscardGroup = document.createElement('div');
-        properDiscardGroup.className = 'form-group';
-
-        const properDiscardLabel = document.createElement('label');
-        properDiscardLabel.setAttribute('for', `properDiscard${additionalPartsCounter}`);
-        properDiscardLabel.textContent = 'Was the drive discarded in the proper DBD bin?';
-
-        const properDiscardInput = document.createElement('input');
-        properDiscardInput.type = 'checkbox';
-        properDiscardInput.id = `properDiscard${additionalPartsCounter}`;
-        properDiscardInput.name = `properDiscard${additionalPartsCounter}`;
-
-        properDiscardInput.addEventListener('change', updatePreview);
-
-        properDiscardGroup.appendChild(properDiscardLabel);
-        properDiscardGroup.appendChild(properDiscardInput);
-        partGroup.appendChild(properDiscardGroup);
-    }
-
-    // Add Delete button
-    const deleteButton = document.createElement('button');
-    deleteButton.className = 'delete-group-btn';
-    deleteButton.textContent = 'Delete this part';
-    deleteButton.setAttribute('type', 'button');
-    deleteButton.setAttribute('data-part-id', additionalPartsCounter);
-    deleteButton.onclick = function() {
-        deletePartGroup(this.getAttribute('data-part-id'));
-    };
-
-    partGroup.appendChild(deleteButton);
-    container.appendChild(partGroup);
-
-    updatePreview();
-}
-
-// Function to add more DBDs (for motherboard template)
-function addMoreDBDs() {
-    additionalDBDsCounter++;
-    const container = document.getElementById('additional-dbds-container');
-
-    const dbdGroup = document.createElement('div');
-    dbdGroup.className = 'additional-part-group';
-    dbdGroup.id = `additional-dbd-${additionalDBDsCounter}`;
-
-    // Create a heading
-    const heading = document.createElement('h4');
-    heading.textContent = `Additional DBD ${additionalDBDsCounter}`;
-    heading.style.marginTop = '0';
-    dbdGroup.appendChild(heading);
-
-    // Create DBD-specific fields
-    createFormField(dbdGroup, 'DBD Serial Number', `dbdSerialNumber${additionalDBDsCounter}`, 'text');
-    createFormField(dbdGroup, 'Slot #', `slotNumber${additionalDBDsCounter}`, 'text');
-
-    // Add Delete button
-    const deleteButton = document.createElement('button');
-    deleteButton.className = 'delete-group-btn';
-    deleteButton.textContent = 'Delete this DBD';
-    deleteButton.setAttribute('type', 'button');
-    deleteButton.setAttribute('data-dbd-id', additionalDBDsCounter);
-    deleteButton.onclick = function() {
-        deleteDBDGroup(this.getAttribute('data-dbd-id'));
-    };
-
-    dbdGroup.appendChild(deleteButton);
-    container.appendChild(dbdGroup);
 
     updatePreview();
 }
@@ -996,28 +929,6 @@ function createFormField(parent, labelText, fieldId, fieldType) {
     parent.appendChild(group);
 }
 
-// Function to delete a part group
-function deletePartGroup(partId) {
-    partId = String(partId);
-
-    const partGroup = document.getElementById(`additional-part-${partId}`);
-    if (partGroup) {
-        partGroup.remove();
-        updatePreview();
-    }
-}
-
-// Function to delete a DBD group
-function deleteDBDGroup(dbdId) {
-    dbdId = String(dbdId);
-
-    const dbdGroup = document.getElementById(`additional-dbd-${dbdId}`);
-    if (dbdGroup) {
-        dbdGroup.remove();
-        updatePreview();
-    }
-}
-
 // Function to update preview as user types
 function updatePreview() {
     const formData = {};
@@ -1029,7 +940,7 @@ function updatePreview() {
         if (input) {
             // Handle checkbox values differently
             if (field.type === 'checkbox') {
-                formData[field.name] = input.checked ? "checked" : "";
+                formData[field.name] = input.checked ? CHECKED : "";
             } else {
                 formData[field.name] = input.value;
             }
@@ -1065,7 +976,7 @@ function updatePreview() {
 
                         if (driveLocation) partData.driveLocation = driveLocation.value;
                         if (binNumber) partData.binNumber = binNumber.value;
-                        if (properDiscard) partData.properDiscard = properDiscard.checked ? "checked" : "";
+                        if (properDiscard) partData.properDiscard = properDiscard.checked ? CHECKED : "";
                     }
 
                     // First row maps to the original field names
@@ -1087,25 +998,35 @@ function updatePreview() {
         }
     }
 
-    // Collect values from additional DBDs (for motherboard template)
+    // Collect values from DBD table (for motherboard template)
     if (currentTemplate === 'mobo') {
         formData.additionalDBDs = [];
 
-        // Look for all additional DBDs in the DOM
-        for (let i = 1; i <= additionalDBDsCounter; i++) {
-            const dbdGroup = document.getElementById(`additional-dbd-${i}`);
-            if (dbdGroup) {
-                const dbdSerial = document.getElementById(`dbdSerialNumber${i}`);
-                const slotNum = document.getElementById(`slotNumber${i}`);
+        const dbdTbody = document.getElementById('dbds-table-body');
+        if (dbdTbody) {
+            const rows = dbdTbody.querySelectorAll('tr');
+            rows.forEach((row, index) => {
+                const rowIndex = row.dataset.rowIndex;
+                const dbdSerial = document.getElementById(`dbdSerialNumber${rowIndex}`);
+                const slotNum = document.getElementById(`slotNumber${rowIndex}`);
 
                 if (dbdSerial && slotNum) {
-                    formData.additionalDBDs.push({
-                        id: i,
+                    const dbdData = {
+                        id: index + 1,
                         dbdSerialNumber: dbdSerial.value,
                         slotNumber: slotNum.value
-                    });
+                    };
+
+                    // First row maps to the original field names
+                    if (index === 0) {
+                        formData.dbdSerialNumber = dbdData.dbdSerialNumber;
+                        formData.slotNumber = dbdData.slotNumber;
+                    } else {
+                        // Additional rows go to additionalDBDs
+                        formData.additionalDBDs.push(dbdData);
+                    }
                 }
-            }
+            });
         }
     }
 
@@ -1134,7 +1055,7 @@ LICENSE PLATE: ${part.licensePlate || "N/A"}`;
                     additionalPartText += `\nBIN #: ${part.binNumber || "N/A"}`;
                 }
                 if (part.properDiscard !== undefined) {
-                    additionalPartText += `\nDRIVE DISCARDED IN PROPER DBD BIN: ${part.properDiscard === "checked" ? "Yes" : "No"}`;
+                    additionalPartText += `\nDRIVE DISCARDED IN PROPER DBD BIN: ${formatCheckbox(part.properDiscard)}`;
                 }
             }
 

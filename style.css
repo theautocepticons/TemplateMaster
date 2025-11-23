@@ -68,6 +68,10 @@ body.dark-mode.accent-green {
     --highlight-bg: #1a3d2e;
 }
 
+* {
+	box-sizing: border-box;
+}
+
 /* Base styles */
 html, body {
     height: 100%;
@@ -495,4 +499,8 @@ select {
         flex-direction: column;
         gap: 1rem;
     }
+}
+
+label[for="template-select"] {
+	margin-right: 1rem;
 }
