@@ -1,4 +1,146 @@
+// ================================================
+// Glow Effect Component
+// ================================================
+
+/**
+ * Adds glow/shine effects to an element
+ * @param {HTMLElement} element - The element to add glows to
+ * @param {Object} options - Configuration options
+ * @param {boolean} options.topRight - Add top-right glow (default: true)
+ * @param {boolean} options.bottomLeft - Add bottom-left glow (default: true)
+ */
+function addGlowEffects(element, options = {}) {
+    const {
+        topRight = true,
+        bottomLeft = true
+    } = options;
+
+    // Remove existing glow elements
+    element.querySelectorAll('.glow-effect').forEach(el => el.remove());
+
+    if (topRight) {
+        // Top-right shine (sharp line on border)
+        const shine = document.createElement('span');
+        shine.className = 'glow-effect glow-effect--shine';
+        element.appendChild(shine);
+
+        // Top-right glow (soft blur)
+        const glow = document.createElement('span');
+        glow.className = 'glow-effect glow-effect--glow';
+        element.appendChild(glow);
+
+        // Top-right bright glow (tighter inner highlight)
+        const glowBright = document.createElement('span');
+        glowBright.className = 'glow-effect glow-effect--glow glow-effect--glow-bright';
+        element.appendChild(glowBright);
+    }
+
+    if (bottomLeft) {
+        // Bottom-left shine
+        const shineBottom = document.createElement('span');
+        shineBottom.className = 'glow-effect glow-effect--shine glow-effect--bottom';
+        element.appendChild(shineBottom);
+
+        // Bottom-left glow
+        const glowBottom = document.createElement('span');
+        glowBottom.className = 'glow-effect glow-effect--glow glow-effect--bottom';
+        element.appendChild(glowBottom);
+
+        // Bottom-left bright glow
+        const glowBrightBottom = document.createElement('span');
+        glowBrightBottom.className = 'glow-effect glow-effect--glow glow-effect--glow-bright glow-effect--bottom';
+        element.appendChild(glowBrightBottom);
+    }
+}
+
+/**
+ * Initialize glow effects on buttons
+ */
+function initButtonGlows() {
+    document.querySelectorAll('.btn').forEach(btn => {
+        addGlowEffects(btn);
+    });
+}
+
+// ================================================
+// Custom Select Dropdown
+// ================================================
+
+function initCustomSelect(wrapperSelector) {
+    const wrapper = document.querySelector(wrapperSelector);
+    if (!wrapper) return;
+
+    const trigger = wrapper.querySelector('.custom-select-trigger');
+    const dropdown = wrapper.querySelector('.custom-select-dropdown');
+    const options = wrapper.querySelectorAll('.custom-select-option');
+    const valueDisplay = wrapper.querySelector('.select-value');
+    const hiddenSelect = wrapper.querySelector('select');
+
+    // Toggle dropdown
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = wrapper.classList.contains('open');
+        closeAllCustomSelects();
+        if (!isOpen) {
+            wrapper.classList.add('open');
+            trigger.setAttribute('aria-expanded', 'true');
+        }
+    });
+
+    // Handle option selection
+    options.forEach(option => {
+        option.addEventListener('click', () => {
+            const value = option.getAttribute('data-value');
+            const text = option.textContent;
+
+            // Update display
+            valueDisplay.textContent = text;
+
+            // Update hidden select
+            if (hiddenSelect) {
+                hiddenSelect.value = value;
+                hiddenSelect.dispatchEvent(new Event('change'));
+            }
+
+            // Update selected state
+            options.forEach(opt => {
+                opt.classList.remove('selected');
+                opt.setAttribute('aria-selected', 'false');
+            });
+            option.classList.add('selected');
+            option.setAttribute('aria-selected', 'true');
+
+            // Close dropdown
+            wrapper.classList.remove('open');
+            trigger.setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    // Keyboard navigation
+    trigger.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            trigger.click();
+        } else if (e.key === 'Escape') {
+            wrapper.classList.remove('open');
+            trigger.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+function closeAllCustomSelects() {
+    document.querySelectorAll('.custom-select.open').forEach(select => {
+        select.classList.remove('open');
+        select.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded', 'false');
+    });
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', closeAllCustomSelects);
+
+// ================================================
 // Constants
+// ================================================
 const CHECKED = "checked";
 const DEFAULT_VALUE = "N/A";
 const DEFAULT_PLACEHOLDER = "[Not specified]";
@@ -29,8 +171,7 @@ function formatPartsSummary(allParts, template) {
         if (template === 'dbd') {
             const loc = part.driveLocation || DEFAULT_VALUE;
             const bin = part.binNumber || DEFAULT_VALUE;
-            const discarded = formatCheckbox(part.properDiscard);
-            line += ` | Loc: ${loc}, Bin: ${bin}, Discarded: ${discarded}`;
+            line += ` | Loc: ${loc}, Bin: ${bin}`;
         }
 
         summary += line;
@@ -197,7 +338,6 @@ TICKET ESCALATED: ${formatCheckbox(data.wasEscalated)}${formatEscalationInfo(dat
             ...partReplacementFields,
             { name: "driveLocation", label: "Location of drive being replaced", type: "text", conditionalOn: { field: "partReplaced", value: CHECKED } },
             { name: "binNumber", label: "Bin #", type: "text", conditionalOn: { field: "partReplaced", value: CHECKED } },
-            { name: "properDiscard", label: "Was the drive discarded in the proper DBD bin?", type: "checkbox", conditionalOn: { field: "partReplaced", value: CHECKED } },
             ...escalationFields
         ],
         format: (data) => {
@@ -310,27 +450,81 @@ const templateSelect = document.getElementById('template-select');
 const copyBtn = document.getElementById('copy-btn');
 const resetBtn = document.getElementById('reset-btn');
 const copyMessage = document.getElementById('copy-message');
+const app = document.getElementById('app');
+const detailsPanel = document.getElementById('details-panel');
+const detailsContent = document.getElementById('details-content');
+
+// Track active details sections
+let activeDetailsSections = new Set();
 
 // Initialize with the default template
 generateFormFields();
+
+// Initialize button glow effects
+initButtonGlows();
+
+// Initialize custom select dropdown
+initCustomSelect('#template-select-wrapper');
 
 // Add event listeners
 templateSelect.addEventListener('change', changeTemplate);
 copyBtn.addEventListener('click', copyToClipboard);
 resetBtn.addEventListener('click', resetForm);
 
+// Details panel functions
+function showDetailsPanel() {
+    detailsPanel.classList.add('visible');
+    app.classList.add('has-details');
+}
+
+function hideDetailsPanel() {
+    detailsPanel.classList.remove('visible');
+    app.classList.remove('has-details');
+    detailsContent.innerHTML = '';
+    activeDetailsSections.clear();
+}
+
+function updateDetailsPanel() {
+    // Clear existing content
+    detailsContent.innerHTML = '';
+
+    if (activeDetailsSections.size === 0) {
+        hideDetailsPanel();
+        return;
+    }
+
+    showDetailsPanel();
+
+    // Add content for each active section
+    activeDetailsSections.forEach(sectionId => {
+        addDetailsSectionContent(sectionId);
+    });
+}
+
 // Theme selector elements
 const modeToggle = document.getElementById('mode-toggle');
-const colorButtons = document.querySelectorAll('.color-btn');
+const primaryColorButtons = document.querySelectorAll('.color-buttons[data-color-type="primary"] .color-btn');
+const secondaryColorButtons = document.querySelectorAll('.color-buttons[data-color-type="secondary"] .color-btn');
 
 // Settings modal elements
 const settingsBtn = document.getElementById('settings-btn');
 const settingsModal = document.getElementById('settings-modal');
 const modalClose = document.getElementById('modal-close');
 
+// Color hue mappings
+const colorHues = {
+    blue: 222,
+    purple: 280,
+    green: 145,
+    red: 0,
+    orange: 30,
+    cyan: 190
+};
+
 // Initialize theme state
 let isDarkMode = localStorage.getItem('darkMode') === 'true';
-let accentColor = localStorage.getItem('accentColor') || 'blue';
+let primaryColor = localStorage.getItem('primaryColor') || 'blue';
+let secondaryColor = localStorage.getItem('secondaryColor') || 'none';
 
 // Apply saved theme on load
 applyTheme();
@@ -357,11 +551,20 @@ modeToggle.addEventListener('click', function() {
     applyTheme();
 });
 
-// Color button event listeners
-colorButtons.forEach(btn => {
+// Primary color button event listeners
+primaryColorButtons.forEach(btn => {
     btn.addEventListener('click', function() {
-        accentColor = this.getAttribute('data-color');
-        localStorage.setItem('accentColor', accentColor);
+        primaryColor = this.getAttribute('data-color');
+        localStorage.setItem('primaryColor', primaryColor);
+        applyTheme();
+    });
+});
+
+// Secondary color button event listeners
+secondaryColorButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+        secondaryColor = this.getAttribute('data-color');
+        localStorage.setItem('secondaryColor', secondaryColor);
         applyTheme();
     });
 });
@@ -377,13 +580,31 @@ function applyTheme() {
         modeToggle.textContent = '☀️';
     }
 
-    // Update accent color
-    document.body.classList.remove('accent-blue', 'accent-purple', 'accent-green');
-    document.body.classList.add(`accent-${accentColor}`);
+    // Remove all color classes
+    document.body.classList.remove(
+        'primary-blue', 'primary-purple', 'primary-green', 'primary-red', 'primary-orange', 'primary-cyan',
+        'secondary-blue', 'secondary-purple', 'secondary-green', 'secondary-red', 'secondary-orange', 'secondary-cyan'
+    );
 
-    // Update active button state
-    colorButtons.forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-color') === accentColor);
+    // Apply primary color
+    document.body.classList.add(`primary-${primaryColor}`);
+
+    // Apply secondary color (if not "none") or sync with primary
+    if (secondaryColor !== 'none') {
+        document.body.classList.add(`secondary-${secondaryColor}`);
+        // Clear any inline --hue2 style so the class takes effect
+        document.documentElement.style.removeProperty('--hue2');
+    } else {
+        // When secondary is "none", set --hue2 to match primary's hue
+        document.documentElement.style.setProperty('--hue2', colorHues[primaryColor]);
+    }
+
+    // Update active button states
+    primaryColorButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-color') === primaryColor);
+    });
+    secondaryColorButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-color') === secondaryColor);
     });
 }
 
@@ -523,103 +744,96 @@ function generateFormFields() {
         templateForm.appendChild(infoElement);
     });
 
-    // Add conditional field containers after the table
-    template.fields.forEach(field => {
-        if (field.hasConditionalFields) {
-            addConditionalFieldsForParent(field.name, template);
-        }
-    });
+    // Reset details panel when switching templates
+    hideDetailsPanel();
 }
 
-// New helper function to add conditional fields recursively
-function addConditionalFieldsForParent(parentFieldName, template) {
-    // Find all conditional fields that depend on this parent field
-    const conditionalFields = template.fields.filter(f =>
-        f.conditionalOn && f.conditionalOn.field === parentFieldName
-    );
+// Function to update visibility of conditional fields based on checkbox state
+function updateConditionalFieldsVisibility(checkbox) {
+    if (checkbox.checked) {
+        activeDetailsSections.add(checkbox.id);
+    } else {
+        activeDetailsSections.delete(checkbox.id);
 
-    if (conditionalFields.length === 0) return;
-
-    // Create a container for the conditional fields
-    const conditionalContainer = document.createElement('div');
-    conditionalContainer.id = `conditional-container-${parentFieldName}`;
-    conditionalContainer.className = 'conditional-fields-container';
-    conditionalContainer.style.display = 'none';
-
-    // Add header based on parent field
-    const header = document.createElement('h3');
-    header.style.marginTop = '0';
-    header.style.marginBottom = '15px';
-    header.style.color = 'var(--primary-color)';
-
-    if (parentFieldName === 'partReplaced') {
-        header.textContent = 'Replacement Parts';
-    } else if (parentFieldName === 'wasEscalated') {
-        header.textContent = 'Escalation Details';
-    } else if (parentFieldName === 'dbdMoved') {
-        header.textContent = 'DBD Information';
+        // Reset counters when unchecking
+        if (checkbox.id === 'partReplaced') {
+            additionalPartsCounter = 0;
+        }
+        if (checkbox.id === 'dbdMoved') {
+            additionalDBDsCounter = 0;
+        }
     }
 
-    if (header.textContent) {
-        conditionalContainer.appendChild(header);
+    updateDetailsPanel();
+}
+
+// Function to add content for a details section
+function addDetailsSectionContent(sectionId) {
+    const template = templates[currentTemplate];
+    const section = document.createElement('div');
+    section.className = 'details-section';
+    section.dataset.sectionId = sectionId;
+
+    // Add section header if there are multiple sections
+    if (activeDetailsSections.size > 1) {
+        const sectionHeader = document.createElement('h4');
+        sectionHeader.className = 'section-subheader';
+        if (sectionId === 'partReplaced') sectionHeader.textContent = 'Parts Replacement';
+        if (sectionId === 'wasEscalated') sectionHeader.textContent = 'Escalation Details';
+        if (sectionId === 'dbdMoved') sectionHeader.textContent = 'DBD Information';
+        section.appendChild(sectionHeader);
     }
 
-    // Special handling for partReplaced - use table layout
-    if (parentFieldName === 'partReplaced' && ['breakfix', 'dbd', 'network', 'mobo'].includes(currentTemplate)) {
-        // Create parts table
+    // Handle parts replacement table
+    if (sectionId === 'partReplaced' && ['breakfix', 'dbd', 'network', 'mobo'].includes(currentTemplate)) {
+        // Add section label for DBD
+        if (currentTemplate === 'dbd') {
+            const sectionLabel = document.createElement('h4');
+            sectionLabel.className = 'details-section-label';
+            sectionLabel.textContent = 'Replaced DBDs';
+            section.appendChild(sectionLabel);
+        }
+
         const partsTable = document.createElement('table');
         partsTable.id = 'parts-table';
         partsTable.className = 'parts-table';
 
-        // Create header row
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
+        // Only add headers for non-DBD templates
+        if (currentTemplate !== 'dbd') {
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            const headers = ['Old Serial', 'New Serial', 'License Plate', ''];
 
-        const headers = currentTemplate === 'dbd'
-            ? ['Old Serial', 'New Serial', 'License Plate', 'Drive Location', 'Bin #', 'Proper Discard', '']
-            : ['Old Serial', 'New Serial', 'License Plate', ''];
+            headers.forEach(text => {
+                const th = document.createElement('th');
+                th.textContent = text;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            partsTable.appendChild(thead);
+        }
 
-        headers.forEach(text => {
-            const th = document.createElement('th');
-            th.textContent = text;
-            headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        partsTable.appendChild(thead);
-
-        // Create tbody
         const tbody = document.createElement('tbody');
         tbody.id = 'parts-table-body';
-
-        // Add first row
         tbody.appendChild(createPartsTableRow(0));
-
         partsTable.appendChild(tbody);
-        conditionalContainer.appendChild(partsTable);
+        section.appendChild(partsTable);
 
-        // Add "Add Row" button
         const addRowBtn = document.createElement('div');
         addRowBtn.className = 'add-more-link';
         addRowBtn.textContent = '+ Add Another Part';
         addRowBtn.addEventListener('click', addPartsTableRow);
-        conditionalContainer.appendChild(addRowBtn);
-
-        // Add the conditional container to the form
-        templateForm.appendChild(conditionalContainer);
-        return;
+        section.appendChild(addRowBtn);
     }
 
-    // Special handling for dbdMoved - use table layout
-    if (parentFieldName === 'dbdMoved' && currentTemplate === 'mobo') {
-        // Create DBD table
+    // Handle DBD moved table
+    if (sectionId === 'dbdMoved' && currentTemplate === 'mobo') {
         const dbdTable = document.createElement('table');
         dbdTable.id = 'dbds-table';
         dbdTable.className = 'parts-table';
 
-        // Create header row
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
-
         const headers = ['DBD Serial', 'Slot #', ''];
 
         headers.forEach(text => {
@@ -630,101 +844,43 @@ function addConditionalFieldsForParent(parentFieldName, template) {
         thead.appendChild(headerRow);
         dbdTable.appendChild(thead);
 
-        // Create tbody
         const tbody = document.createElement('tbody');
         tbody.id = 'dbds-table-body';
-
-        // Add first row
         tbody.appendChild(createDBDTableRow(0));
-
         dbdTable.appendChild(tbody);
-        conditionalContainer.appendChild(dbdTable);
+        section.appendChild(dbdTable);
 
-        // Add "Add Row" button
         const addRowBtn = document.createElement('div');
         addRowBtn.className = 'add-more-link';
         addRowBtn.textContent = '+ Add Another DBD';
         addRowBtn.addEventListener('click', addDBDTableRow);
-        conditionalContainer.appendChild(addRowBtn);
-
-        // Add the conditional container to the form
-        templateForm.appendChild(conditionalContainer);
-        return;
+        section.appendChild(addRowBtn);
     }
 
-    // Add each conditional field to the container (for non-parts/non-dbd fields)
-    conditionalFields.forEach(condField => {
-        // Handle info/text-only conditional fields
-        if (condField.type === 'info') {
-            const infoDiv = createInfoElement(condField.text || condField.label);
-            infoDiv.style.margin = '10px 0';
-            conditionalContainer.appendChild(infoDiv);
-            return;
-        }
+    // Handle escalation fields
+    if (sectionId === 'wasEscalated') {
+        const conditionalFields = template.fields.filter(f =>
+            f.conditionalOn && f.conditionalOn.field === 'wasEscalated'
+        );
 
-        const condFormGroup = document.createElement('div');
-        condFormGroup.className = 'form-group';
+        conditionalFields.forEach(condField => {
+            const formGroup = document.createElement('div');
+            formGroup.className = 'form-group';
 
-        const condLabel = document.createElement('label');
-        condLabel.setAttribute('for', condField.name);
-        condLabel.textContent = condField.label;
+            const label = document.createElement('label');
+            label.setAttribute('for', condField.name);
+            label.textContent = condField.label;
 
-        const condInput = createInput(condField);
-        if (condField.type === 'checkbox') {
-            condInput.style.marginLeft = '0';
-            condInput.style.marginTop = '10px';
-        }
+            const input = createInput(condField);
+            input.addEventListener('input', updatePreview);
 
-        // Add event listener based on field type
-        if (condField.type === 'select') {
-            condInput.addEventListener('change', updatePreview);
-        } else {
-            condInput.addEventListener('input', updatePreview);
-        }
-
-        condFormGroup.appendChild(condLabel);
-        condFormGroup.appendChild(condInput);
-        conditionalContainer.appendChild(condFormGroup);
-    });
-
-    // Add the conditional container to the form
-    templateForm.appendChild(conditionalContainer);
-}
-
-
-// Function to update visibility of conditional fields based on checkbox state
-function updateConditionalFieldsVisibility(checkbox) {
-    const container = document.getElementById(`conditional-container-${checkbox.id}`);
-    if (container) {
-        if (checkbox.checked) {
-            container.style.display = 'block';
-            // Scroll to the container
-            setTimeout(() => {
-                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-        } else {
-            container.style.display = 'none';
-            // Clear all input fields in the container
-            const inputs = container.querySelectorAll('input, textarea, select');
-            inputs.forEach(input => {
-                if (input.type === 'checkbox') {
-                    input.checked = false;
-                } else {
-                    input.value = '';
-                }
-            });
-
-            // If this is the partReplaced checkbox, also reset additional parts
-            if (checkbox.id === 'partReplaced') {
-                resetAdditionalParts();
-            }
-
-            // If this is the dbdMoved checkbox, also reset additional DBDs
-            if (checkbox.id === 'dbdMoved') {
-                resetAdditionalDBDs();
-            }
-        }
+            formGroup.appendChild(label);
+            formGroup.appendChild(input);
+            section.appendChild(formGroup);
+        });
     }
+
+    detailsContent.appendChild(section);
 }
 
 // Function to reset additional parts
@@ -737,8 +893,92 @@ function resetAdditionalParts() {
     additionalPartsCounter = 0;
 }
 
-// Function to create a parts table row
+// Function to create a parts table row (or row group for DBD)
 function createPartsTableRow(index) {
+    if (currentTemplate === 'dbd') {
+        // DBD uses two-row layout per entry
+        const fragment = document.createDocumentFragment();
+
+        // Row 1: Old Serial, New Serial, LP, Delete button
+        const tr1 = document.createElement('tr');
+        tr1.dataset.rowIndex = index;
+        tr1.className = 'parts-row-primary';
+
+        let td = document.createElement('td');
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.name = `oldSerialNumber${index}`;
+        input.id = `oldSerialNumber${index}`;
+        input.placeholder = 'Old Serial';
+        input.addEventListener('input', updatePreview);
+        td.appendChild(input);
+        tr1.appendChild(td);
+
+        td = document.createElement('td');
+        input = document.createElement('input');
+        input.type = 'text';
+        input.name = `newSerialNumber${index}`;
+        input.id = `newSerialNumber${index}`;
+        input.placeholder = 'New Serial';
+        input.addEventListener('input', updatePreview);
+        td.appendChild(input);
+        tr1.appendChild(td);
+
+        td = document.createElement('td');
+        input = document.createElement('input');
+        input.type = 'text';
+        input.name = `licensePlate${index}`;
+        input.id = `licensePlate${index}`;
+        input.placeholder = 'LP';
+        input.addEventListener('input', updatePreview);
+        td.appendChild(input);
+        tr1.appendChild(td);
+
+        // Delete button
+        td = document.createElement('td');
+        td.rowSpan = 2;
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'delete-row-btn';
+        deleteBtn.textContent = '×';
+        deleteBtn.addEventListener('click', function() {
+            deletePartsTableRow(tr1, tr2);
+        });
+        td.appendChild(deleteBtn);
+        tr1.appendChild(td);
+
+        // Row 2: Location, Bin (spanning 3 columns)
+        const tr2 = document.createElement('tr');
+        tr2.dataset.rowIndex = index;
+        tr2.className = 'parts-row-secondary';
+
+        td = document.createElement('td');
+        td.colSpan = 2;
+        input = document.createElement('input');
+        input.type = 'text';
+        input.name = `driveLocation${index}`;
+        input.id = `driveLocation${index}`;
+        input.placeholder = 'Drive Location';
+        input.addEventListener('input', updatePreview);
+        td.appendChild(input);
+        tr2.appendChild(td);
+
+        td = document.createElement('td');
+        input = document.createElement('input');
+        input.type = 'text';
+        input.name = `binNumber${index}`;
+        input.id = `binNumber${index}`;
+        input.placeholder = 'Bin #';
+        input.addEventListener('input', updatePreview);
+        td.appendChild(input);
+        tr2.appendChild(td);
+
+        fragment.appendChild(tr1);
+        fragment.appendChild(tr2);
+        return fragment;
+    }
+
+    // Non-DBD templates: single row
     const tr = document.createElement('tr');
     tr.dataset.rowIndex = index;
 
@@ -772,39 +1012,6 @@ function createPartsTableRow(index) {
     td.appendChild(input);
     tr.appendChild(td);
 
-    // DBD-specific fields
-    if (currentTemplate === 'dbd') {
-        // Drive Location
-        td = document.createElement('td');
-        input = document.createElement('input');
-        input.type = 'text';
-        input.name = `driveLocation${index}`;
-        input.id = `driveLocation${index}`;
-        input.addEventListener('input', updatePreview);
-        td.appendChild(input);
-        tr.appendChild(td);
-
-        // Bin #
-        td = document.createElement('td');
-        input = document.createElement('input');
-        input.type = 'text';
-        input.name = `binNumber${index}`;
-        input.id = `binNumber${index}`;
-        input.addEventListener('input', updatePreview);
-        td.appendChild(input);
-        tr.appendChild(td);
-
-        // Proper Discard checkbox
-        td = document.createElement('td');
-        input = document.createElement('input');
-        input.type = 'checkbox';
-        input.name = `properDiscard${index}`;
-        input.id = `properDiscard${index}`;
-        input.addEventListener('change', updatePreview);
-        td.appendChild(input);
-        tr.appendChild(td);
-    }
-
     // Delete button
     td = document.createElement('td');
     const deleteBtn = document.createElement('button');
@@ -831,10 +1038,13 @@ function addPartsTableRow() {
 }
 
 // Function to delete a row from the parts table
-function deletePartsTableRow(row) {
+function deletePartsTableRow(row, secondRow = null) {
     const tbody = document.getElementById('parts-table-body');
-    if (tbody && tbody.children.length > 1) {
+    // For DBD (two rows per entry), minimum is 2 rows; otherwise, minimum is 1
+    const minRows = currentTemplate === 'dbd' ? 2 : 1;
+    if (tbody && tbody.children.length > minRows) {
         row.remove();
+        if (secondRow) secondRow.remove();
         updatePreview();
     }
 }
@@ -973,7 +1183,9 @@ function updatePreview() {
 
         const tbody = document.getElementById('parts-table-body');
         if (tbody) {
-            const rows = tbody.querySelectorAll('tr');
+            // For DBD, only select primary rows to avoid duplicates (two rows per entry)
+            const rowSelector = currentTemplate === 'dbd' ? 'tr.parts-row-primary' : 'tr';
+            const rows = tbody.querySelectorAll(rowSelector);
             rows.forEach((row, index) => {
                 const rowIndex = row.dataset.rowIndex;
                 const oldSerial = document.getElementById(`oldSerialNumber${rowIndex}`);
@@ -992,11 +1204,9 @@ function updatePreview() {
                     if (currentTemplate === 'dbd') {
                         const driveLocation = document.getElementById(`driveLocation${rowIndex}`);
                         const binNumber = document.getElementById(`binNumber${rowIndex}`);
-                        const properDiscard = document.getElementById(`properDiscard${rowIndex}`);
 
                         if (driveLocation) partData.driveLocation = driveLocation.value;
                         if (binNumber) partData.binNumber = binNumber.value;
-                        if (properDiscard) partData.properDiscard = properDiscard.checked ? CHECKED : "";
                     }
 
                     // Add all parts to the array
@@ -1111,21 +1321,16 @@ function fallbackCopyTextToClipboard(text) {
 function resetForm() {
     templateForm.reset();
 
-    // Reset conditional field containers
-    document.querySelectorAll('.conditional-fields-container').forEach(container => {
-        container.style.display = 'none';
-    });
-
     // Reset checkboxes (they might not be properly reset by the form.reset())
-    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    document.querySelectorAll('#template-form input[type="checkbox"]').forEach(checkbox => {
         checkbox.checked = false;
     });
 
-    // Reset additional parts
-    resetAdditionalParts();
-
-    // Reset additional DBDs
-    resetAdditionalDBDs();
+    // Hide details panel and reset counters
+    hideDetailsPanel();
+    additionalPartsCounter = 0;
+    additionalDBDsCounter = 0;
 
     updatePreview();
 }
+
