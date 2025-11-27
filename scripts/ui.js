@@ -8,6 +8,51 @@ function formatCheckbox(value) {
     return value === CHECKED ? "Yes" : "No";
 }
 
+function truncateSerial(serial, length = 6) {
+    if (!serial || serial === DEFAULT_VALUE || serial === DEFAULT_PLACEHOLDER) return serial;
+    return serial.length > length ? '...' + serial.slice(-length) : serial;
+}
+
+function formatPartsSummary(allParts, template) {
+    if (!allParts || allParts.length === 0) return '';
+
+    let summary = `\n\nREPLACED PARTS (${allParts.length}):`;
+
+    allParts.forEach(part => {
+        const oldSerial = truncateSerial(part.oldSerialNumber || DEFAULT_VALUE);
+        const newSerial = truncateSerial(part.newSerialNumber || DEFAULT_VALUE);
+        const lp = part.licensePlate || DEFAULT_VALUE;
+
+        let line = `\n• ${oldSerial} → ${newSerial} (LP: ${lp})`;
+
+        // Add DBD-specific fields for dbd template
+        if (template === 'dbd') {
+            const loc = part.driveLocation || DEFAULT_VALUE;
+            const bin = part.binNumber || DEFAULT_VALUE;
+            const discarded = formatCheckbox(part.properDiscard);
+            line += ` | Loc: ${loc}, Bin: ${bin}, Discarded: ${discarded}`;
+        }
+
+        summary += line;
+    });
+
+    return summary;
+}
+
+function formatDBDsSummary(allDBDs) {
+    if (!allDBDs || allDBDs.length === 0) return '';
+
+    let summary = `\n\nMOVED DBDs (${allDBDs.length}):`;
+
+    allDBDs.forEach(dbd => {
+        const serial = truncateSerial(dbd.dbdSerialNumber || DEFAULT_VALUE);
+        const slot = dbd.slotNumber || DEFAULT_VALUE;
+        summary += `\n• ${serial} (Slot: ${slot})`;
+    });
+
+    return summary;
+}
+
 function formatEscalationInfo(data) {
     if (data.wasEscalated === CHECKED) {
         return `
@@ -17,26 +62,6 @@ ESCALATION DETAILS:
 - Senior Tech Approval: ${data.seniorTechAlias || DEFAULT_PLACEHOLDER}`;
     }
     return "";
-}
-
-function formatPartReplacementInfo(data, includeDBDFields = false) {
-    if (data.partReplaced === CHECKED) {
-        let info = `
-
-PART(S) REPLACED: Yes
-OLD SERIAL NUMBER: ${data.oldSerialNumber || DEFAULT_VALUE}
-NEW SERIAL NUMBER: ${data.newSerialNumber || DEFAULT_VALUE}
-LICENSE PLATE: ${data.licensePlate || DEFAULT_VALUE}`;
-
-        if (includeDBDFields) {
-            info += `
-DRIVE LOCATION: ${data.driveLocation || DEFAULT_VALUE}
-BIN #: ${data.binNumber || DEFAULT_VALUE}
-DRIVE DISCARDED IN PROPER DBD BIN: ${formatCheckbox(data.properDiscard)}`;
-        }
-        return info;
-    }
-    return "\nPART(S) REPLACED: No";
 }
 
 // DOM element creation helpers
@@ -129,7 +154,7 @@ const templates = {
 ASSET TAG CONFIRMED: ${formatCheckbox(data.assetTagConfirmed)}
 
 UPON ARRIVAL:
-${data.uponArrival || "[No arrival notes recorded]"}${formatPartReplacementInfo(data)}
+${data.uponArrival || "[No arrival notes recorded]"}
 
 ACTIONS TAKEN:
 ${data.actionsTaken || "[No actions recorded]"}
@@ -155,7 +180,7 @@ ASSET TAG CONFIRMED: ${formatCheckbox(data.assetTagConfirmed)}
 UPON ARRIVAL:
 ${data.uponArrival || "[No arrival notes recorded]"}
 SOURCE DEVICE:PORT: ${data.sourceDevice || DEFAULT_VALUE}
-END DEVICE:PORT: ${data.endDevice || DEFAULT_VALUE}${formatPartReplacementInfo(data)}
+END DEVICE:PORT: ${data.endDevice || DEFAULT_VALUE}
 
 ACTIONS TAKEN:
 ${data.actionsTaken || "[No actions recorded]"}
@@ -180,7 +205,7 @@ TICKET ESCALATED: ${formatCheckbox(data.wasEscalated)}${formatEscalationInfo(dat
 ASSET TAG CONFIRMED: ${formatCheckbox(data.assetTagConfirmed)}
 
 UPON ARRIVAL:
-${data.uponArrival || "[No arrival notes recorded]"}${formatPartReplacementInfo(data, true)}
+${data.uponArrival || "[No arrival notes recorded]"}
 
 ACTIONS TAKEN:
 ${data.actionsTaken || "[No actions recorded]"}
@@ -204,36 +229,11 @@ TICKET ESCALATED: ${formatCheckbox(data.wasEscalated)}${formatEscalationInfo(dat
             ...escalationFields
         ],
         format: (data) => {
-            // Motherboard uses different labels
-            let partReplacementInfo = "";
-            if (data.partReplaced === CHECKED) {
-                partReplacementInfo = `
-
-PART(S) REPLACED: Yes
-OLD MOTHERBOARD SERIAL NUMBER: ${data.oldSerialNumber || DEFAULT_VALUE}
-NEW MOTHERBOARD SERIAL NUMBER: ${data.newSerialNumber || DEFAULT_VALUE}
-LICENSE PLATE: ${data.licensePlate || DEFAULT_VALUE}`;
-            } else {
-                partReplacementInfo = "\nPART(S) REPLACED: No";
-            }
-
-            // Format DBD information
-            let dbdInfo = "";
-            if (data.dbdMoved === CHECKED) {
-                dbdInfo = `
-
-DBD(S) MOVED FROM OLD TO NEW MOTHERBOARD: Yes
-DBD SERIAL NUMBER: ${data.dbdSerialNumber || DEFAULT_VALUE}
-SLOT #: ${data.slotNumber || DEFAULT_VALUE}`;
-            } else {
-                dbdInfo = "\nDBD(S) MOVED: No";
-            }
-
             return `TASK ID: ${data.taskId || "[No ID]"}
 ASSET TAG CONFIRMED: ${formatCheckbox(data.assetTagConfirmed)}
 
 UPON ARRIVAL:
-${data.uponArrival || "[No arrival notes recorded]"}${partReplacementInfo}${dbdInfo}
+${data.uponArrival || "[No arrival notes recorded]"}
 
 ACTIONS TAKEN:
 ${data.actionsTaken || "[No actions recorded]"}
@@ -323,12 +323,32 @@ resetBtn.addEventListener('click', resetForm);
 const modeToggle = document.getElementById('mode-toggle');
 const colorButtons = document.querySelectorAll('.color-btn');
 
+// Settings modal elements
+const settingsBtn = document.getElementById('settings-btn');
+const settingsModal = document.getElementById('settings-modal');
+const modalClose = document.getElementById('modal-close');
+
 // Initialize theme state
 let isDarkMode = localStorage.getItem('darkMode') === 'true';
 let accentColor = localStorage.getItem('accentColor') || 'blue';
 
 // Apply saved theme on load
 applyTheme();
+
+// Settings modal event listeners
+settingsBtn.addEventListener('click', () => {
+    settingsModal.classList.add('show');
+});
+
+modalClose.addEventListener('click', () => {
+    settingsModal.classList.remove('show');
+});
+
+settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) {
+        settingsModal.classList.remove('show');
+    }
+});
 
 // Mode toggle event listener
 modeToggle.addEventListener('click', function() {
@@ -947,9 +967,9 @@ function updatePreview() {
         }
     });
 
-    // Collect values from parts table
+    // Collect ALL parts from parts table into a single array
     if (['breakfix', 'dbd', 'network', 'mobo'].includes(currentTemplate)) {
-        formData.additionalParts = [];
+        formData.allParts = [];
 
         const tbody = document.getElementById('parts-table-body');
         if (tbody) {
@@ -979,28 +999,16 @@ function updatePreview() {
                         if (properDiscard) partData.properDiscard = properDiscard.checked ? CHECKED : "";
                     }
 
-                    // First row maps to the original field names
-                    if (index === 0) {
-                        formData.oldSerialNumber = partData.oldSerialNumber;
-                        formData.newSerialNumber = partData.newSerialNumber;
-                        formData.licensePlate = partData.licensePlate;
-                        if (currentTemplate === 'dbd') {
-                            formData.driveLocation = partData.driveLocation;
-                            formData.binNumber = partData.binNumber;
-                            formData.properDiscard = partData.properDiscard;
-                        }
-                    } else {
-                        // Additional rows go to additionalParts
-                        formData.additionalParts.push(partData);
-                    }
+                    // Add all parts to the array
+                    formData.allParts.push(partData);
                 }
             });
         }
     }
 
-    // Collect values from DBD table (for motherboard template)
+    // Collect ALL DBDs from DBD table into a single array (for motherboard template)
     if (currentTemplate === 'mobo') {
-        formData.additionalDBDs = [];
+        formData.allDBDs = [];
 
         const dbdTbody = document.getElementById('dbds-table-body');
         if (dbdTbody) {
@@ -1017,14 +1025,8 @@ function updatePreview() {
                         slotNumber: slotNum.value
                     };
 
-                    // First row maps to the original field names
-                    if (index === 0) {
-                        formData.dbdSerialNumber = dbdData.dbdSerialNumber;
-                        formData.slotNumber = dbdData.slotNumber;
-                    } else {
-                        // Additional rows go to additionalDBDs
-                        formData.additionalDBDs.push(dbdData);
-                    }
+                    // Add all DBDs to the array
+                    formData.allDBDs.push(dbdData);
                 }
             });
         }
@@ -1033,50 +1035,22 @@ function updatePreview() {
     // Format the note
     let formattedNote = template.format(formData);
 
-    // Add additional parts info to the formatted note
+    // Add parts summary at the bottom (only if parts were replaced)
     if (['breakfix', 'dbd', 'network', 'mobo'].includes(currentTemplate) &&
-        formData.additionalParts &&
-        formData.additionalParts.length > 0) {
+        formData.partReplaced === CHECKED &&
+        formData.allParts &&
+        formData.allParts.length > 0) {
 
-        formattedNote += '\n\nADDITIONAL PARTS:';
-
-        formData.additionalParts.forEach((part, index) => {
-            let additionalPartText = `\n\nPART #${index + 2}:
-OLD SERIAL NUMBER: ${part.oldSerialNumber || "N/A"}
-NEW SERIAL NUMBER: ${part.newSerialNumber || "N/A"}
-LICENSE PLATE: ${part.licensePlate || "N/A"}`;
-
-            // Add DBD-specific fields
-            if (currentTemplate === 'dbd') {
-                if (part.driveLocation !== undefined) {
-                    additionalPartText += `\nDRIVE LOCATION: ${part.driveLocation || "N/A"}`;
-                }
-                if (part.binNumber !== undefined) {
-                    additionalPartText += `\nBIN #: ${part.binNumber || "N/A"}`;
-                }
-                if (part.properDiscard !== undefined) {
-                    additionalPartText += `\nDRIVE DISCARDED IN PROPER DBD BIN: ${formatCheckbox(part.properDiscard)}`;
-                }
-            }
-
-            formattedNote += additionalPartText;
-        });
+        formattedNote += formatPartsSummary(formData.allParts, currentTemplate);
     }
 
-    // Add additional DBDs info to the formatted note (for motherboard)
+    // Add DBDs summary at the bottom (for motherboard template, only if DBDs were moved)
     if (currentTemplate === 'mobo' &&
-        formData.additionalDBDs &&
-        formData.additionalDBDs.length > 0) {
+        formData.dbdMoved === CHECKED &&
+        formData.allDBDs &&
+        formData.allDBDs.length > 0) {
 
-        formattedNote += '\n\nADDITIONAL DBDs:';
-
-        formData.additionalDBDs.forEach((dbd, index) => {
-            let additionalDBDText = `\n\nDBD #${index + 2}:
-DBD SERIAL NUMBER: ${dbd.dbdSerialNumber || "N/A"}
-SLOT #: ${dbd.slotNumber || "N/A"}`;
-
-            formattedNote += additionalDBDText;
-        });
+        formattedNote += formatDBDsSummary(formData.allDBDs);
     }
 
     previewDiv.textContent = formattedNote;

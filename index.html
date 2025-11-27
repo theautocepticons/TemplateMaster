@@ -11,25 +11,42 @@
 	<link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
 
 	<!-- CSS -->
-	 <link rel="stylesheet" href="font-ubuntu.css">
-	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="css/font-ubuntu.css">
+	<link rel="stylesheet" href="css/font-satoshi.css">
+	<link rel="stylesheet" href="css/style.css">
 </head>
 <body class="accent-blue">
-    <!-- Top bar -->
-    <header class="top-bar">
-        <h1 class="branding">TemplateMaster</h1>
-        <div class="theme-selector">
-            <button id="mode-toggle" class="mode-toggle" aria-label="Toggle dark mode">☀️</button>
-            <div class="color-buttons">
-                <button class="color-btn" data-color="blue" aria-label="Blue theme"></button>
-                <button class="color-btn" data-color="purple" aria-label="Purple theme"></button>
-                <button class="color-btn" data-color="green" aria-label="Green theme"></button>
-            </div>
-        </div>
-    </header>
-
     <main class="container">
         <div class="form-section">
+            <header class="top-bar">
+                <div><button id="settings-btn" class="settings-btn" aria-label="Settings">⚙️</button></div>
+                <div><h1 class="branding">TemplateMaster</h1></div>
+                <div></div>
+            </header>
+
+            <!-- Settings Modal -->
+            <div id="settings-modal" class="modal-overlay">
+                <div class="modal">
+                    <div class="modal-header">
+                        <h2>Settings</h2>
+                        <button id="modal-close" class="modal-close" aria-label="Close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="setting-group">
+                            <label>Theme Mode</label>
+                            <button id="mode-toggle" class="mode-toggle" aria-label="Toggle dark mode">☀️</button>
+                        </div>
+                        <div class="setting-group">
+                            <label>Accent Color</label>
+                            <div class="color-buttons">
+                                <button class="color-btn" data-color="blue" aria-label="Blue theme"></button>
+                                <button class="color-btn" data-color="purple" aria-label="Purple theme"></button>
+                                <button class="color-btn" data-color="green" aria-label="Green theme"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="template-controls">
                 <label for="template-select">Choose a template:</label>
                 <select id="template-select">
@@ -59,6 +76,6 @@
         </div>
     </main>
 
-    <script src="ui.js"></script>
+    <script src="scripts/ui.js"></script>
 </body>
 </html>
