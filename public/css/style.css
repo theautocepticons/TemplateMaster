@@ -1581,10 +1581,27 @@ body:not(.dark-mode) .form-section label {
     color: hsl(var(--hue1) 30% 30%);
 }
 
+/* Light mode task form labels */
+body:not(.dark-mode) #menu #template-form label,
+body:not(.dark-mode) #details-panel .form-group label {
+    color: hsl(var(--hue1) 30% 30%);
+}
+
 /* Light mode form inputs */
 body:not(.dark-mode) .form-section input,
 body:not(.dark-mode) .form-section select,
 body:not(.dark-mode) .form-section textarea {
+    background-color: hsl(var(--hue2) 20% 97%);
+    border-color: hsl(var(--hue2) 20% 80%);
+    color: hsl(var(--hue1) 30% 20%);
+}
+
+body:not(.dark-mode) #menu #template-form input[type="text"],
+body:not(.dark-mode) #menu #template-form textarea,
+body:not(.dark-mode) #menu #template-form select,
+body:not(.dark-mode) #details-panel input[type="text"],
+body:not(.dark-mode) #details-panel textarea,
+body:not(.dark-mode) #details-panel select {
     background-color: hsl(var(--hue2) 20% 97%);
     border-color: hsl(var(--hue2) 20% 80%);
     color: hsl(var(--hue1) 30% 20%);
