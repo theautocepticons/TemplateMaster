@@ -503,6 +503,7 @@ function updateDetailsPanel() {
 
 // Theme selector elements
 const modeToggle = document.getElementById('mode-toggle');
+const animationToggle = document.getElementById('animation-toggle');
 const primaryColorButtons = document.querySelectorAll('.color-buttons[data-color-type="primary"] .color-btn');
 const secondaryColorButtons = document.querySelectorAll('.color-buttons[data-color-type="secondary"] .color-btn');
 
@@ -525,6 +526,7 @@ const colorHues = {
 let isDarkMode = localStorage.getItem('darkMode') === 'true';
 let primaryColor = localStorage.getItem('primaryColor') || 'blue';
 let secondaryColor = localStorage.getItem('secondaryColor') || 'none';
+let isAnimated = localStorage.getItem('animatedBackground') !== 'false'; // Default to true
 
 // Apply saved theme on load
 applyTheme();
@@ -550,6 +552,23 @@ modeToggle.addEventListener('click', function() {
     localStorage.setItem('darkMode', isDarkMode);
     applyTheme();
 });
+
+// Animation toggle event listener
+animationToggle.addEventListener('click', function() {
+    isAnimated = !isAnimated;
+    localStorage.setItem('animatedBackground', isAnimated);
+    updateAnimationToggle();
+});
+
+function updateAnimationToggle() {
+    animationToggle.textContent = isAnimated ? '▶️' : '⏸️';
+    if (window.waveBackground) {
+        window.waveBackground.setAnimated(isAnimated);
+    }
+}
+
+// Initialize animation toggle on load
+updateAnimationToggle();
 
 // Primary color button event listeners
 primaryColorButtons.forEach(btn => {
@@ -606,6 +625,11 @@ function applyTheme() {
     secondaryColorButtons.forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-color') === secondaryColor);
     });
+
+    // Notify canvas background of theme change
+    if (window.waveBackground) {
+        window.waveBackground.updateTheme();
+    }
 }
 
 // Function to change template

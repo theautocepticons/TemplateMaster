@@ -14,8 +14,11 @@
 	<link rel="stylesheet" href="css/font-ubuntu.css">
 	<link rel="stylesheet" href="css/font-satoshi.css">
 	<link rel="stylesheet" href="css/style.css">
+
 </head>
 <body class="primary-blue">
+    <canvas id="wave-bg"></canvas>
+
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal-overlay">
         <div class="modal">
@@ -27,6 +30,10 @@
                 <div class="setting-group">
                     <label>Theme Mode</label>
                     <button id="mode-toggle" class="mode-toggle" aria-label="Toggle dark mode">☀️</button>
+                </div>
+                <div class="setting-group">
+                    <label>Animation</label>
+                    <button id="animation-toggle" class="mode-toggle" aria-label="Toggle background animation">▶️</button>
                 </div>
                 <div class="setting-group">
                     <label>Primary</label>
@@ -150,6 +157,7 @@
         </div>
     </main>
 
+    <script src="dist/wave-background.js"></script>
     <script src="scripts/ui.js"></script>
 </body>
 </html>

@@ -1,0 +1,11 @@
+{
+  "name": "templatemaster",
+  "scripts": {
+    "build": "bun build scripts/wave-background.js --outdir=dist --minify",
+    "watch": "bun build scripts/wave-background.js --outdir=dist --watch"
+  },
+  "dependencies": {
+    "chroma-js": "^3.1.4",
+    "three": "^0.181.2"
+  }
+}
