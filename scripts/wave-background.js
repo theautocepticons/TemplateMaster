@@ -110,7 +110,7 @@ class Tube {
 
         this.curve = new CustomCurve(x, y, l, noise);
         this.geometry = new THREE.TubeGeometry(this.curve, segments, radius, this.radialSegments, false);
-        this.material = new THREE.MeshStandardMaterial({ color, metalness: 1, roughness: 0.15 });
+        this.material = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.2 });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
     }
     update() {
@@ -155,6 +155,9 @@ function App(conf) {
     let light1, light2, light3, light4;
     let objects, noiseConf = {};
     let cscale;
+    const STORAGE_KEY = 'waveBackground_animated';
+    let animating = localStorage.getItem(STORAGE_KEY) !== 'false';
+    let animationId = null;
     // Use fixed initial color like the example
     updateCScale(chroma('#d11f6c'));
 
@@ -230,6 +233,50 @@ function App(conf) {
         noiseConf.time = Date.now() * conf.timeCoef * 0.000002;
     }
 
+    function getThemeHues() {
+        const style = getComputedStyle(document.body);
+        const hue1 = parseInt(style.getPropertyValue('--hue1')) || 222;
+        const hue2 = parseInt(style.getPropertyValue('--hue2')) || hue1;
+        return { hue1, hue2 };
+    }
+
+    function isDarkMode() {
+        return document.body.classList.contains('dark-mode');
+    }
+
+    function updateBackgroundColor() {
+        if (scene) {
+            const dark = isDarkMode();
+            scene.background = new THREE.Color(dark ? 0x000000 : 0xf0f2f5);
+            // Adjust ambient light for light mode
+            if (scene.children[0] && scene.children[0].isAmbientLight) {
+                scene.children[0].intensity = dark ? 0.3 : 0.5;
+            }
+        }
+    }
+
+    function updateThemeLights() {
+        // Use requestAnimationFrame to ensure CSS has been applied
+        requestAnimationFrame(() => {
+            const { hue1, hue2 } = getThemeHues();
+            // Update background based on dark/light mode
+            updateBackgroundColor();
+            // Create vibrant neon colors from the theme hues
+            // Primary lights
+            light1.color = new THREE.Color(chroma.hsl(hue1, 1, 0.6).hex());
+            light3.color = new THREE.Color(chroma.hsl(hue1, 0.95, 0.55).hex());
+            // Secondary lights - higher lightness and intensity for better visibility
+            light2.color = new THREE.Color(chroma.hsl(hue2, 1, 0.65).hex());
+            light2.intensity = conf.lightIntensity * 1.3;
+            light4.color = new THREE.Color(chroma.hsl(hue2, 1, 0.6).hex());
+            light4.intensity = conf.lightIntensity * 1.3;
+            // Re-render if paused to show changes
+            if (!animating) {
+                renderer.render(scene, camera);
+            }
+        });
+    }
+
     function updateColors() {
         const color = chroma.random();
         updateCScale(color);
@@ -253,10 +300,50 @@ function App(conf) {
     }
 
     function animate() {
-        requestAnimationFrame(animate);
+        if (!animating) return;
+        animationId = requestAnimationFrame(animate);
         animateObjects();
         animateLights();
         renderer.render(scene, camera);
+    }
+
+    function pause() {
+        animating = false;
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+    }
+
+    function resume() {
+        if (!animating) {
+            animating = true;
+            animate();
+        }
+    }
+
+    function setAnimated(enabled) {
+        localStorage.setItem(STORAGE_KEY, enabled ? 'true' : 'false');
+        if (enabled) {
+            resume();
+        } else {
+            pause();
+            // Position lights to show both colors nicely when static
+            const dx = wWidth / 2;
+            const dy = wHeight / 2;
+            // Primary lights on top-left and bottom-right
+            light1.position.set(-dx * 0.5, dy * 0.5, 50);
+            light3.position.set(dx * 0.5, -dy * 0.5, 50);
+            // Secondary lights on top-right and bottom-left
+            light2.position.set(dx * 0.5, dy * 0.5, 50);
+            light4.position.set(-dx * 0.5, -dy * 0.5, 50);
+            // Render one final frame
+            renderer.render(scene, camera);
+        }
+    }
+
+    function isAnimated() {
+        return animating;
     }
 
     function animateObjects() {
@@ -301,9 +388,21 @@ function App(conf) {
         return [width, height];
     }
 
+    // Set initial light colors from theme
+    updateThemeLights();
+
+    // Apply saved animation state (after a frame to ensure everything is initialized)
+    if (!animating) {
+        requestAnimationFrame(() => setAnimated(false));
+    }
+
     return {
         updateColors,
-        updateTheme: updateColors
+        updateTheme: updateThemeLights,
+        setAnimated,
+        isAnimated,
+        pause,
+        resume
     };
 }
 
@@ -315,10 +414,10 @@ function initWaveBackground() {
     window.waveBackground = {
         updateTheme: () => app?.updateTheme(),
         updateColors: () => app?.updateColors(),
-        setAnimated: () => {},
-        isAnimated: () => true,
-        pause: () => {},
-        resume: () => {}
+        setAnimated: (enabled) => app?.setAnimated(enabled),
+        isAnimated: () => app?.isAnimated() ?? true,
+        pause: () => app?.pause(),
+        resume: () => app?.resume()
     };
 }
 

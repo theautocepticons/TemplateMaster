@@ -1543,3 +1543,216 @@ h1, h2, h3, h4, h5 {
         min-height: 50vh;
     }
 }
+
+/* ================================================
+   Light Mode Styles
+   ================================================ */
+
+body:not(.dark-mode) {
+    --glass-border-color: hsl(var(--hue2), 20%, 75%);
+}
+
+/* Light mode glass panels */
+body:not(.dark-mode) .glass-panel {
+    background: linear-gradient(235deg, hsl(var(--hue1) 40% 95% / 0.9), hsl(var(--hue1) 40% 98% / 0.7) 33%),
+                linear-gradient(45deg, hsl(var(--hue2) 40% 95% / 0.9), hsl(var(--hue2) 40% 98% / 0.7) 33%),
+                linear-gradient(hsl(220deg 20% 97% / 0.92));
+    box-shadow: hsl(var(--hue2) 30% 70% / 0.3) 0px 10px 16px -8px,
+                hsl(var(--hue2) 30% 80% / 0.2) 0px 20px 36px -14px;
+    color: hsl(220deg 20% 30%);
+}
+
+/* Light mode preview section */
+body:not(.dark-mode) .preview-section {
+    background-color: hsl(220deg 20% 97% / 0.85);
+    border-color: hsl(var(--hue2), 20%, 80%);
+}
+
+body:not(.dark-mode) #preview {
+    color: hsl(var(--hue1) 30% 25%);
+}
+
+/* Light mode text colors */
+body:not(.dark-mode) .menu-header h3 {
+    color: hsl(var(--hue1) 40% 25%);
+}
+
+body:not(.dark-mode) .form-section label {
+    color: hsl(var(--hue1) 30% 30%);
+}
+
+/* Light mode form inputs */
+body:not(.dark-mode) .form-section input,
+body:not(.dark-mode) .form-section select,
+body:not(.dark-mode) .form-section textarea {
+    background-color: hsl(var(--hue2) 20% 97%);
+    border-color: hsl(var(--hue2) 20% 80%);
+    color: hsl(var(--hue1) 30% 20%);
+}
+
+body:not(.dark-mode) .form-section input:focus,
+body:not(.dark-mode) .form-section select:focus,
+body:not(.dark-mode) .form-section textarea:focus {
+    border-color: hsl(var(--hue1) 50% 50%);
+    background-color: hsl(var(--hue1) 30% 99%);
+}
+
+body:not(.dark-mode) .form-section input::placeholder,
+body:not(.dark-mode) .form-section textarea::placeholder {
+    color: hsl(var(--hue1) 15% 60%);
+}
+
+/* Light mode custom select */
+body:not(.dark-mode) .custom-select-trigger {
+    background: linear-gradient(to bottom, hsl(var(--hue1) 20% 98% / 0.9) 50%, hsl(var(--hue1) 30% 92% / 0.9) 180%);
+    border-color: hsl(var(--hue2) 20% 75%);
+    color: hsl(var(--hue1) 30% 25%);
+}
+
+body:not(.dark-mode) .custom-select-trigger:hover {
+    border-color: hsl(var(--hue1) 30% 60%);
+    background: linear-gradient(to bottom, hsl(var(--hue1) 25% 96% / 0.95) 50%, hsl(var(--hue1) 35% 88% / 0.95) 180%);
+}
+
+body:not(.dark-mode) .custom-select-dropdown {
+    background-color: hsl(var(--hue2) 20% 97%);
+    border-color: hsl(var(--hue2) 20% 80%);
+}
+
+body:not(.dark-mode) .custom-select-option {
+    color: hsl(var(--hue1) 30% 25%);
+}
+
+body:not(.dark-mode) .custom-select-option:hover {
+    background-color: hsl(var(--hue1) 40% 90%);
+}
+
+body:not(.dark-mode) .custom-select-option.selected {
+    background-color: hsl(var(--hue1) 50% 85%);
+    color: hsl(var(--hue1) 50% 20%);
+}
+
+/* Light mode buttons */
+body:not(.dark-mode) .btn {
+    background: linear-gradient(to bottom, hsl(var(--hue1) 20% 98% / 0.9) 50%, hsl(var(--hue1) 30% 92% / 0.9) 180%);
+    border-color: hsl(var(--hue2) 20% 75%);
+    color: hsl(var(--hue1) 30% 25%);
+}
+
+body:not(.dark-mode) .btn:hover {
+    border-color: hsl(var(--hue1) 30% 60%);
+    color: hsl(var(--hue1) 40% 20%);
+}
+
+body:not(.dark-mode) .btn-reset {
+    background-color: hsl(var(--hue1) 30% 92%);
+    border-color: hsl(var(--hue1) 30% 75%);
+}
+
+body:not(.dark-mode) .btn-reset:hover {
+    background-color: hsl(var(--hue1) 40% 85%);
+}
+
+/* Light mode scrollbars */
+body:not(.dark-mode) .form-section::-webkit-scrollbar-track,
+body:not(.dark-mode) #details-panel .inner::-webkit-scrollbar-track,
+body:not(.dark-mode) #preview::-webkit-scrollbar-track {
+    background: hsl(var(--hue2) 15% 92%);
+}
+
+body:not(.dark-mode) .form-section::-webkit-scrollbar-thumb,
+body:not(.dark-mode) #details-panel .inner::-webkit-scrollbar-thumb,
+body:not(.dark-mode) #preview::-webkit-scrollbar-thumb {
+    background: hsl(var(--hue1) 30% 75%);
+}
+
+body:not(.dark-mode) .form-section::-webkit-scrollbar-thumb:hover,
+body:not(.dark-mode) #details-panel .inner::-webkit-scrollbar-thumb:hover,
+body:not(.dark-mode) #preview::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--hue1) 40% 65%);
+}
+
+/* Light mode modal */
+body:not(.dark-mode) .modal {
+    background: linear-gradient(235deg, hsl(var(--hue1) 30% 97% / 0.98), hsl(var(--hue1) 30% 99% / 0.95) 33%),
+                linear-gradient(45deg, hsl(var(--hue2) 30% 97% / 0.98), hsl(var(--hue2) 30% 99% / 0.95) 33%),
+                hsl(220deg 20% 98% / 0.98);
+    border-color: hsl(var(--hue2) 20% 80%);
+}
+
+body:not(.dark-mode) .modal-header h2 {
+    color: hsl(var(--hue1) 40% 25%);
+}
+
+body:not(.dark-mode) .modal-header {
+    border-bottom-color: hsl(var(--hue2) 20% 85%);
+}
+
+body:not(.dark-mode) .modal-close {
+    color: hsl(var(--hue1) 30% 40%);
+}
+
+body:not(.dark-mode) .modal-close:hover {
+    color: hsl(var(--hue1) 40% 25%);
+    background: hsl(var(--hue1) 30% 90%);
+}
+
+body:not(.dark-mode) .setting-group label {
+    color: hsl(var(--hue1) 30% 30%);
+}
+
+body:not(.dark-mode) .mode-toggle {
+    background: hsl(var(--hue1) 25% 92%);
+    border-color: hsl(var(--hue1) 20% 80%);
+}
+
+body:not(.dark-mode) .mode-toggle:hover {
+    background: hsl(var(--hue1) 30% 88%);
+}
+
+/* Light mode color buttons */
+body:not(.dark-mode) .color-btn {
+    border-color: hsl(var(--hue2) 20% 75%);
+}
+
+body:not(.dark-mode) .color-btn.active {
+    box-shadow: 0 0 0 2px hsl(var(--hue1) 50% 50% / 0.6);
+}
+
+body:not(.dark-mode) .color-btn-none {
+    background: linear-gradient(135deg, hsl(var(--hue2) 15% 90%) 45%, hsl(var(--hue2) 15% 80%) 55%);
+    color: hsl(var(--hue2) 20% 50%);
+}
+
+/* Light mode settings icon */
+body:not(.dark-mode) .settings-icon {
+    color: hsl(var(--hue1) 30% 40%);
+}
+
+body:not(.dark-mode) .settings-icon:hover {
+    color: hsl(var(--hue1) 40% 30%);
+    background: hsl(var(--hue1) 30% 90%);
+}
+
+/* Light mode HR */
+body:not(.dark-mode) .glass-panel hr {
+    border-color: hsl(var(--hue2) 20% 85%);
+}
+
+/* Light mode glow effects - more subtle */
+body:not(.dark-mode) .glass-panel .shine,
+body:not(.dark-mode) .glass-panel .glow {
+    opacity: 0.4;
+}
+
+/* Light mode details section */
+body:not(.dark-mode) #details-panel .details-section h4 {
+    color: hsl(var(--hue1) 40% 25%);
+}
+
+body:not(.dark-mode) .escalation-note,
+body:not(.dark-mode) .parts-note {
+    background: hsl(var(--hue1) 25% 94%);
+    border-left-color: hsl(var(--hue1) 50% 50%);
+    color: hsl(var(--hue1) 30% 30%);
+}
