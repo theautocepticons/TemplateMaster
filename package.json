@@ -1,8 +1,8 @@
-build{
+{
   "name": "templatemaster",
   "scripts": {
-    "build": "esbuild scripts/ui.js scripts/wave-background.js --outdir=public/scripts --minify",
-    "watch": "esbuild scripts/ui.js scripts/wave-background.js --outdir=public/scripts --watch"
+    "build": "esbuild scripts/ui.js scripts/wave-background.js --bundle --outdir=public/scripts --minify",
+    "watch": "esbuild scripts/ui.js scripts/wave-background.js --bundle --outdir=public/scripts --watch"
   },
   "dependencies": {
     "chroma-js": "^3.1.4",
