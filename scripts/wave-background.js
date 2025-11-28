@@ -377,6 +377,33 @@ function App(conf) {
             const wsize = getRendererSize();
             wWidth = wsize[0];
             wHeight = wsize[1];
+
+            // Reinitialize scene objects and lights with new dimensions
+            if (scene) {
+                // Remove old objects
+                objects?.forEach(obj => {
+                    scene.remove(obj.mesh);
+                    obj.geometry.dispose();
+                    obj.material.dispose();
+                });
+
+                // Recreate objects with new dimensions
+                initObjects();
+
+                // Reposition lights
+                if (light1 && light2 && light3 && light4) {
+                    const z = 50;
+                    light1.position.set(0, wHeight / 2, z);
+                    light2.position.set(0, -wHeight / 2, z);
+                    light3.position.set(wWidth / 2, 0, z);
+                    light4.position.set(-wWidth / 2, 0, z);
+                }
+
+                // Re-render if paused
+                if (!animating) {
+                    renderer.render(scene, camera);
+                }
+            }
         }
     }
 
