@@ -156,7 +156,7 @@ function App(conf) {
     let objects, noiseConf = {};
     let cscale;
     const STORAGE_KEY = 'waveBackground_animated';
-    let animating = localStorage.getItem(STORAGE_KEY) !== 'false';
+    let animating = localStorage.getItem(STORAGE_KEY) === 'true';
     let animationId = null;
     // Use fixed initial color like the example
     updateCScale(chroma('#d11f6c'));

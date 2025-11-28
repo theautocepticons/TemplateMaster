@@ -523,10 +523,10 @@ const colorHues = {
 };
 
 // Initialize theme state
-let isDarkMode = localStorage.getItem('darkMode') === 'true';
+let isDarkMode = localStorage.getItem('darkMode') !== 'false'; // Default to true (dark mode)
 let primaryColor = localStorage.getItem('primaryColor') || 'blue';
 let secondaryColor = localStorage.getItem('secondaryColor') || 'none';
-let isAnimated = localStorage.getItem('animatedBackground') !== 'false'; // Default to true
+let isAnimated = localStorage.getItem('waveBackground_animated') === 'true'; // Default to false (paused)
 
 // Apply saved theme on load
 applyTheme();
@@ -556,7 +556,7 @@ modeToggle.addEventListener('click', function() {
 // Animation toggle event listener
 animationToggle.addEventListener('click', function() {
     isAnimated = !isAnimated;
-    localStorage.setItem('animatedBackground', isAnimated);
+    localStorage.setItem('waveBackground_animated', isAnimated);
     updateAnimationToggle();
 });
 
