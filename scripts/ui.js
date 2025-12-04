@@ -152,7 +152,7 @@ function formatCheckbox(value) {
 
 function truncateSerial(serial, length = 30) {
     if (!serial || serial === DEFAULT_VALUE || serial === DEFAULT_PLACEHOLDER) return serial;
-    return serial.length > length ? '...' + serial.slice(-length) : serial;
+    return serial/*.length > length ? '...' + serial.slice(-length) : serial*/;
 }
 
 function formatPartsSummary(allParts, template) {
