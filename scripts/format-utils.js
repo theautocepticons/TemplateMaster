@@ -10,7 +10,7 @@ export function formatCheckbox(value) {
 
 export function truncateSerial(serial, length = 30) {
     if (!serial || serial === DEFAULT_VALUE || serial === DEFAULT_PLACEHOLDER) return serial;
-    return serial.length > length ? '...' + serial.slice(-length) : serial;
+    return serial/*.length > length ? '...' + serial.slice(-length) : serial*/;
 }
 
 export function formatPartsSummary(allParts, template) {
