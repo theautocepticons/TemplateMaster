@@ -150,10 +150,10 @@ function formatCheckbox(value) {
     return value === CHECKED ? "Yes" : "No";
 }
 
-/*function truncateSerial(serial, length = 30) {
+function truncateSerial(serial, length = 30) {
     if (!serial || serial === DEFAULT_VALUE || serial === DEFAULT_PLACEHOLDER) return serial;
-    return serial/*.length > length ? '...' + serial.slice(-length) : serial;
-}*/
+    return serial.length > length ? '...' + serial.slice(-length) : serial;
+}
 
 function formatPartsSummary(allParts, template) {
     if (!allParts || allParts.length === 0) return '';
@@ -161,8 +161,8 @@ function formatPartsSummary(allParts, template) {
     let summary = `\n\nREPLACED PARTS (${allParts.length}):`;
 
     allParts.forEach(part => {
-        const oldSerial = /*truncateSerial(part.*/(oldSerialNumber || DEFAULT_VALUE);
-        const newSerial = /*truncateSerial(part.*/(newSerialNumber || DEFAULT_VALUE);
+        const oldSerial = truncateSerial(part.(oldSerialNumber || DEFAULT_VALUE);
+        const newSerial = truncateSerial(part.(newSerialNumber || DEFAULT_VALUE);
         const lp = part.licensePlate || DEFAULT_VALUE;
 
         let line = `\n• ${oldSerial} → ${newSerial} (LP: ${lp})`;
